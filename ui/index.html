@@ -1,876 +1,564 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Hierarchical AI-Meteorologist: Advanced meteorological reasoning and automated report generation." />
-    <title>AI-Meteorologist | Precision Forecasting</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            /* Monochrome Design System */
-            --bg-deep: #000000;
-            --bg-surface: #0a0a0a;
-            --bg-card: rgba(20, 20, 20, 0.8);
-            --border: rgba(255, 255, 255, 0.1);
-            --border-hover: rgba(255, 255, 255, 0.3);
-            
-            /* Text Colors */
-            --text-primary: #ffffff;
-            --text-secondary: #a1a1aa;
-            --text-muted: #52525b;
-            
-            /* Accents (B&W) */
-            --accent-primary: #ffffff;
-            --accent-secondary: #71717a;
-            --accent-gradient: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
-            --accent-glow: rgba(255, 255, 255, 0.05);
-            
-            /* Semantic (Monochrome adjustments) */
-            --success: #ffffff;
-            --warning: #71717a;
-            --danger: #ffffff;
-            --highlight: rgba(255, 255, 255, 0.05);
-            --highlight-border: #ffffff;
-
-            /* Transitions */
-            --ease: cubic-bezier(0.16, 1, 0.3, 1);
-            --transition: all 0.4s var(--ease);
-        }
-
-        body.light-mode {
-            --bg-deep: #ffffff;
-            --bg-surface: #fdfdfd;
-            --bg-card: rgba(255, 255, 255, 0.9);
-            --border: rgba(0, 0, 0, 0.1);
-            --border-hover: rgba(0, 0, 0, 0.2);
-            
-            /* Text Colors */
-            --text-primary: #111111;
-            --text-secondary: #52525b;
-            --text-muted: #a1a1aa;
-            
-            /* Accents (B&W) */
-            --accent-primary: #000000;
-            --accent-secondary: #71717a;
-            --accent-gradient: linear-gradient(135deg, #000000 0%, #52525b 100%);
-            --accent-glow: rgba(0, 0, 0, 0.02);
-            
-            /* Semantic */
-            --success: #000000;
-            --warning: #a1a1aa;
-            --danger: #000000;
-            --highlight: rgba(0, 0, 0, 0.04);
-            --highlight-border: #000000;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background-color: var(--bg-deep);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        h1, h2, h3, h4 {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 600;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
-
-        /* Typography Utilities */
-        .text-gradient {
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-        }
-
-        /* Layout */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 3rem 2rem;
-        }
-
-        header {
-            margin-bottom: 3.5rem;
-            animation: fadeInDown 1s var(--ease);
-            text-align: center;
-        }
-
-        header h1 {
-            font-size: 3.5rem;
-            letter-spacing: -0.04em;
-            margin-bottom: 0.75rem;
-            text-transform: uppercase;
-        }
-
-        header p {
-            color: var(--text-secondary);
-            font-size: 1rem;
-            max-width: 600px;
-            margin: 0 auto 1.5rem auto;
-            letter-spacing: 0.02em;
-        }
-
-        .theme-toggle {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            transition: var(--transition);
-            margin: 0 auto;
-            display: block;
-        }
-
-        .theme-toggle:hover {
-            border-color: var(--text-primary);
-        }
-
-        /* Pipeline Visualizer */
-        .pipeline-bar {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-top: 2rem;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-        }
-
-        .step {
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 0.5rem 1rem;
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: var(--transition);
-        }
-
-        .step i {
-            width: 4px;
-            height: 4px;
-            background: var(--text-muted);
-            display: inline-block;
-        }
-
-        .step.active {
-            border-color: var(--text-primary);
-            color: var(--text-primary);
-        }
-
-        .step.active i {
-            background: var(--text-primary);
-            box-shadow: 0 0 8px var(--text-primary);
-        }
-
-        /* Form Styling */
-        .control-panel {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(20px);
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.25rem;
-            animation: fadeIn 1s var(--ease);
-        }
-
-        .field {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .field label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-        }
-
-        input, select {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            color: var(--text-primary);
-            padding: 0.75rem 1rem;
-            font-size: 0.95rem;
-            transition: var(--transition);
-            outline: none;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--text-primary);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        button#run {
-            background: var(--text-primary);
-            border: none;
-            border-radius: 4px;
-            color: var(--bg-deep);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-size: 0.85rem;
-            padding: 0.85rem 1.75rem;
-            cursor: pointer;
-            transition: var(--transition);
-            grid-column: span 1;
-            align-self: flex-end;
-            margin-top: auto;
-        }
-
-        button#run:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 255, 255, 0.15);
-            background: #f4f4f5;
-        }
-
-        button#run:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        button#run:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Main Dashboard */
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            animation: fadeInUp 1s var(--ease);
-        }
-
-        @media (max-width: 1100px) {
-            .dashboard { grid-template-columns: 1fr; }
-        }
-
-        .panel {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            backdrop-filter: blur(20px);
-        }
-
-        .panel-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .panel-header h2 {
-            font-size: 1.1rem;
-            color: var(--accent-primary);
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 4px;
-            margin: 1rem 1.5rem;
-            border-radius: 4px;
-            gap: 4px;
-        }
-
-        .tabs button {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            padding: 0.6rem;
-            font-size: 0.85rem;
-            font-weight: 500;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .tabs button.active {
-            background: var(--bg-surface);
-            color: var(--text-primary);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-
-        /* Results Display */
-        .content-area {
-            padding: 0 1.5rem 1.5rem;
-            flex: 1;
-            overflow-y: auto;
-            max-height: 700px;
-        }
-
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; animation: slideIn 0.4s var(--ease); }
-
-        /* Tables */
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 0.85rem;
-        }
-
-        th {
-            position: sticky;
-            top: 0;
-            background: var(--bg-surface);
-            color: var(--text-muted);
-            text-align: left;
-            padding: 0.75rem 1rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            letter-spacing: 0.05em;
-            z-index: 10;
-        }
-
-        td {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border);
-            color: var(--text-secondary);
-        }
-
-        tr.data-row {
-            transition: var(--transition);
-        }
-
-        tr.data-row:hover {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        tr.row-hit {
-            background: var(--highlight) !important;
-            box-shadow: inset 2px 0 0 var(--highlight-border);
-        }
-
-        /* Keywords Area */
-        .keywords-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .keyword-chip {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: var(--transition);
-            color: var(--text-secondary);
-        }
-
-        .keyword-chip:hover {
-            border-color: var(--text-primary);
-            color: var(--text-primary);
-            transform: scale(1.02);
-        }
-
-        .keyword-chip.active {
-            background: var(--text-primary);
-            color: var(--bg-deep);
-            border-color: var(--text-primary);
-        }
-
-        /* Report Styles */
-        .section-label {
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 1rem;
-            display: block;
-        }
-
-        .report-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .report-card h3 {
-            font-size: 1.25rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .summary-text {
-            color: var(--text-primary);
-            line-height: 1.7;
-            font-size: 1rem;
-            white-space: pre-wrap;
-        }
-
-        .proof-block {
-            margin-top: 1rem;
-            border-left: 2px solid var(--border);
-            padding-left: 1rem;
-        }
-
-        .proof-line {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
-            transition: var(--transition);
-        }
-
-        .proof-line.hit {
-            background: var(--highlight);
-            color: var(--accent-primary);
-        }
-
-        .warning-strip {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            padding: 1rem;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            margin-top: 1rem;
-            display: none;
-            border-left: 3px solid #fff;
-        }
-
-        .badge-bar {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin-top: 1rem;
-        }
-
-        .badge {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border);
-            padding: 0.25rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        /* Status States */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #ffffff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-bottom: 1.5rem;
-        }
-
-        .error-toast {
-            background: #450a0a;
-            border: 1px solid #991b1b;
-            color: #fca5a5;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            z-index: 2000;
-            display: none;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
-            animation: slideInRight 0.3s var(--ease);
-        }
-
-        /* Animations */
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
-
-        /* Responsive Fixes */
-        @media (max-width: 768px) {
-            .container { padding: 1rem; }
-            header h1 { font-size: 1.8rem; }
-            .control-panel { grid-template-columns: 1fr; }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hierarchical AI-Meteorologist — Demo</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1a2332;
+      --border: #2d3a4f;
+      --text: #e7eef7;
+      --muted: #8b9cb3;
+      --accent: #3d8bfd;
+      --hit: rgba(61, 139, 253, 0.22);
+      --hit-border: #3d8bfd;
+      --kw: #7ee787;
+      --warn: #f0ad4e;
+      --font: "Segoe UI", system-ui, sans-serif;
+      --mono: ui-monospace, "Cascadia Code", monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+    }
+    header h1 { margin: 0 0 0.35rem; font-size: 1.15rem; font-weight: 600; }
+    header p { margin: 0; font-size: 0.8rem; color: var(--muted); max-width: 72ch; line-height: 1.45; }
+    .chain {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .chain span {
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .form {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.6rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      align-items: end;
+    }
+    label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.72rem; color: var(--muted); }
+    input, select, button {
+      font: inherit;
+      padding: 0.45rem 0.55rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+    }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      grid-column: span 1;
+    }
+    button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      min-height: calc(100vh - 200px);
+    }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    .pane {
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      min-height: 420px;
+    }
+    .pane:last-child { border-right: none; }
+    .pane-head {
+      padding: 0.6rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.2);
+    }
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .tabs button {
+      flex: 1;
+      border: none;
+      border-radius: 0;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0.5rem;
+      font-size: 0.8rem;
+    }
+    .tabs button.active {
+      color: var(--text);
+      border-bottom-color: var(--accent);
+      background: rgba(61, 139, 253, 0.08);
+    }
+    .tab-panel { display: none; flex: 1; overflow: auto; padding: 0.5rem; }
+    .tab-panel.active { display: block; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72rem;
+      font-family: var(--mono);
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.45rem;
+      text-align: left;
+    }
+    th { background: rgba(61, 139, 253, 0.12); color: var(--muted); font-weight: 500; }
+    tr.data-row.row-hit {
+      background: var(--hit);
+      outline: 1px solid var(--hit-border);
+    }
+    .report-pane { overflow: auto; padding: 0 1rem 1.5rem; }
+    .keywords {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0.75rem 0 1rem;
+      align-items: center;
+    }
+    .keywords .hint { font-size: 0.72rem; color: var(--muted); width: 100%; margin-bottom: 0.25rem; }
+    .kw {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--kw);
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .kw:hover { border-color: var(--kw); }
+    .kw.active {
+      background: rgba(126, 231, 135, 0.15);
+      border-color: var(--kw);
+      box-shadow: 0 0 0 2px rgba(126, 231, 135, 0.25);
+    }
+    .stage {
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .stage h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+    }
+    .proof-line {
+      margin: 0.35rem 0;
+      padding: 0.35rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      border-left: 3px solid transparent;
+    }
+    .proof-line.hit {
+      background: var(--hit);
+      border-left-color: var(--hit-border);
+    }
+    .summary {
+      font-size: 0.88rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+    .final-title { font-size: 1.05rem; margin: 0 0 0.35rem; }
+    .preamble { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.75rem; }
+    .error {
+      margin: 1rem 1.25rem;
+      padding: 0.75rem;
+      background: rgba(220, 80, 80, 0.15);
+      border: 1px solid #c44;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      display: none;
+    }
+    .error.show { display: block; }
+    .badges { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.5rem 1rem; }
+    .badge {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .loading { padding: 2rem; text-align: center; color: var(--muted); display: none; }
+    .loading.show { display: block; }
+    .meta-small { font-size: 0.7rem; color: var(--muted); margin-top: 0.5rem; }
+  </style>
 </head>
 <body>
-
-<div class="container">
-    <header>
-        <h1 class="text-gradient">AI-Meteorologist</h1>
-        <p>A hierarchical reasoning pipeline that translates high-resolution meteorological data into structured professional insights.</p>
-        
-        <button id="theme-btn" class="theme-toggle">Switch Theme</button>
-        
-        <div class="pipeline-bar">
-            <div class="step"><i></i> Geocoding</div>
-            <div class="step"><i></i> Data Harvesting</div>
-            <div class="step"><i></i> Agreggation</div>
-            <div class="step"><i></i> Reasoning</div>
-            <div class="step"><i></i> Synthesis</div>
-        </div>
-    </header>
-
-    <div class="control-panel">
-        <div class="field">
-            <label>Location Query</label>
-            <input type="text" id="query" placeholder="e.g. London, UK" />
-        </div>
-        <div class="field">
-            <label>Context Strategy</label>
-            <select id="context_style">
-                <option value="hierarchical" selected>Hierarchical (Optimized)</option>
-                <option value="baseline">Baseline (Full Hourly)</option>
-            </select>
-        </div>
-        <div class="field">
-            <label>Personality</label>
-            <select id="tone">
-                <option value="technical">Meteorological / Technical</option>
-                <option value="conversational" selected>Natural / Conversational</option>
-                <option value="official">Public Safety / Official</option>
-            </select>
-        </div>
-        <div class="field">
-            <label>Audience Domain</label>
-            <select id="domain">
-                <option value="general_public" selected>General Public</option>
-                <option value="risk_analysis">Disaster / Risk Analysis</option>
-                <option value="energy">Renewable Energy Ops</option>
-                <option value="extreme_weather">Severe Weather Monitoring</option>
-                <option value="agriculture">Agrometeorology</option>
-            </select>
-        </div>
-        <button id="run">Execute Pipeline</button>
+  <header>
+    <h1>Hierarchical AI-Meteorologist</h1>
+    <p>
+      <strong>Data → aggregation → structured reasoning → report.</strong>
+      Click a <em>keyword</em> to highlight matching lines in the meteorologist <strong>proof</strong> and supporting rows in the <strong>daily / 6-hour</strong> tables (visual coupling for verification).
+    </p>
+    <div class="chain">
+      <span>① Geo + Open-Meteo + climatology</span>
+      <span>② Daily &amp; 6-hour aggregates</span>
+      <span>③ Meteorologist (JSON schema)</span>
+      <span>④ Writer (tone / domain)</span>
     </div>
+  </header>
 
-    <div id="dashboard" class="dashboard" style="display: none;">
-        <!-- Left Column: Data Grid -->
-        <div class="panel">
-            <div class="panel-header">
-                <h2>Raw Diagnostics</h2>
-                <div id="loc-badge"></div>
-            </div>
-            
-            <div class="tabs" id="tabs">
-                <button type="button" data-tab="daily" class="active">Daily</button>
-                <button type="button" data-tab="six">6-Hour</button>
-                <button type="button" data-tab="hourly">Hourly</button>
-                <button type="button" data-tab="current">Real-time</button>
-            </div>
+  <form class="form" id="form" onsubmit="return false;">
+    <label>Location query
+      <input type="text" id="query" placeholder="e.g. Berlin" autocomplete="off" />
+    </label>
+    <label>Latitude (optional)
+      <input type="number" id="lat" step="any" placeholder="52.52" />
+    </label>
+    <label>Longitude (optional)
+      <input type="number" id="lon" step="any" placeholder="13.41" />
+    </label>
+    <label>Context
+      <select id="context_style">
+        <option value="hierarchical" selected>hierarchical</option>
+        <option value="baseline">baseline</option>
+      </select>
+    </label>
+    <label>Tone
+      <select id="tone">
+        <option value="technical">technical</option>
+        <option value="conversational" selected>conversational</option>
+        <option value="official">official</option>
+      </select>
+    </label>
+    <label>Length
+      <select id="length">
+        <option value="short">short</option>
+        <option value="medium" selected>medium</option>
+        <option value="long">long</option>
+      </select>
+    </label>
+    <label>Domain
+      <select id="domain">
+        <option value="general_public" selected>general public</option>
+        <option value="risk_analysis">risk analysis</option>
+        <option value="energy">energy</option>
+        <option value="extreme_weather">extreme weather</option>
+        <option value="urban_planning">urban planning</option>
+        <option value="agriculture">agriculture</option>
+      </select>
+    </label>
+    <button type="button" class="primary" id="run">Run full pipeline</button>
+  </form>
 
-            <div class="content-area">
-                <div id="panel-daily" class="tab-panel active"></div>
-                <div id="panel-six" class="tab-panel"></div>
-                <div id="panel-hourly" class="tab-panel"></div>
-                <div id="panel-current" class="tab-panel"></div>
-            </div>
+  <div class="error" id="error"></div>
+  <div class="loading" id="loading">Running pipeline (data + LLMs)…</div>
+
+  <div id="main" style="display:none;">
+    <div class="badges" id="badges"></div>
+    <div class="layout">
+      <section class="pane">
+        <div class="pane-head">Aggregated inputs (tables)</div>
+        <div class="tabs" id="tabs">
+          <button type="button" data-tab="daily" class="active">Daily</button>
+          <button type="button" data-tab="six">6-hour</button>
+          <button type="button" data-tab="hourly">Hourly</button>
+          <button type="button" data-tab="current">Current</button>
         </div>
-
-        <!-- Right Column: AI Output -->
-        <div class="panel">
-            <div class="panel-header">
-                <h2>Forecaster Synthesis</h2>
-            </div>
-            
-            <div class="content-area" style="padding-top: 1.5rem;">
-                <span class="section-label">Diagnostic Keywords</span>
-                <div class="keywords-grid" id="keyword-grid"></div>
-
-                <div class="report-card">
-                    <span class="section-label" style="color: var(--text-secondary)">Meteorologist Analysis</span>
-                    <div class="summary-text" id="meteo-summary" style="font-size: 0.9rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;"></div>
-                    <span class="section-label">Evidence Verification (Proof)</span>
-                    <div class="proof-block" id="meteo-proof"></div>
-                </div>
-
-                <div class="report-card" style="border-color: var(--text-primary)">
-                    <span class="section-label" style="color: var(--text-primary)">Final Synthesis</span>
-                    <h3 id="rep-title"></h3>
-                    <div class="summary-text" id="rep-summary"></div>
-                    
-                    <div id="warning-strip" class="warning-strip"></div>
-                    
-                    <div class="badge-bar" id="meta-badges"></div>
-                </div>
-            </div>
+        <div id="panel-daily" class="tab-panel active"></div>
+        <div id="panel-six" class="tab-panel"></div>
+        <div id="panel-hourly" class="tab-panel"></div>
+        <div id="panel-current" class="tab-panel"></div>
+      </section>
+      <section class="pane report-pane">
+        <div class="pane-head">Reasoning &amp; report</div>
+        <div class="keywords" id="kw-box">
+          <span class="hint">Keywords (meteorologist) — click to highlight proof + table rows</span>
         </div>
+        <div class="stage" id="stage-meteo">
+          <h3>Stage 2 — Meteorologist (structured output)</h3>
+          <div class="summary" id="meteo-summary"></div>
+          <p class="meta-small">Proof (evidence block; must support the summary)</p>
+          <div id="meteo-proof"></div>
+        </div>
+        <div class="stage" id="stage-writer">
+          <h3>Stage 3 — Writer (style only; facts preserved)</h3>
+          <div class="final-title" id="rep-title"></div>
+          <div class="preamble" id="rep-info"></div>
+          <div class="summary" id="rep-summary"></div>
+          <p class="meta-small">Forwarded proof (edited for readability)</p>
+          <div id="rep-proof"></div>
+          <div id="warnings" style="margin-top:1rem;color:var(--warn);font-size:0.85rem;"></div>
+        </div>
+      </section>
     </div>
-</div>
+  </div>
 
-<div id="loading" class="loading-overlay">
-    <div class="spinner"></div>
-    <p style="color: var(--text-primary); letter-spacing: 0.1em; font-weight: 600;">ORCHESTRATING PIPELINE</p>
-    <p id="loading-subtext" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.5rem;">Connecting to atmospheric data nodes...</p>
-</div>
-
-<div id="error-toast" class="error-toast"></div>
-
-<script>
-    const el = (s) => document.querySelector(s);
+  <script>
+    const $ = (s) => document.querySelector(s);
     const API = "/api/pipeline";
 
-    // Theme Management
-    const themeBtn = el("#theme-btn");
-    const body = document.body;
-
-    if (localStorage.getItem("theme") === "light") {
-        body.classList.add("light-mode");
+    function escapeHtml(s) {
+      if (s == null) return "";
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
     }
 
-    themeBtn.addEventListener("click", () => {
-        body.classList.toggle("light-mode");
-        const isLight = body.classList.contains("light-mode");
-        localStorage.setItem("theme", isLight ? "light" : "dark");
-    });
+    function tokensFromKeyword(kw) {
+      return kw.toLowerCase().split(/\s+/).filter((w) => w.length > 2);
+    }
+
+    function textMatchesKeyword(text, kw) {
+      const t = text.toLowerCase();
+      const toks = tokensFromKeyword(kw);
+      if (toks.length) return toks.some((tok) => t.includes(tok));
+      return t.includes(String(kw).toLowerCase());
+    }
+
+    function rowMatchesKeyword(obj, kw) {
+      return textMatchesKeyword(JSON.stringify(obj), kw);
+    }
 
     let activeKeyword = null;
-    let lastData = null;
-
-    function formatValue(v, dec = 1) {
-        if (v === null || v === undefined) return "—";
-        return typeof v === 'number' ? v.toFixed(dec) : v;
-    }
+    let lastContext = null;
 
     function clearHighlights() {
-        document.querySelectorAll(".proof-line.hit").forEach(e => e.classList.remove("hit"));
-        document.querySelectorAll(".data-row.row-hit").forEach(e => e.classList.remove("row-hit"));
-        document.querySelectorAll(".keyword-chip.active").forEach(e => e.classList.remove("active"));
+      document.querySelectorAll(".proof-line.hit").forEach((el) => el.classList.remove("hit"));
+      document.querySelectorAll("tr.data-row.row-hit").forEach((el) => el.classList.remove("row-hit"));
+      document.querySelectorAll(".kw.active").forEach((el) => el.classList.remove("active"));
     }
 
-    function applyHighlight(kw) {
-        clearHighlights();
-        activeKeyword = kw;
-        
-        document.querySelectorAll(".keyword-chip").forEach(c => {
-            if (c.textContent === kw) c.classList.add("active");
-        });
-
-        const toks = kw.toLowerCase().split(/\s+/).filter(t => t.length > 2);
-        
-        document.querySelectorAll(".proof-line").forEach(p => {
-            if (toks.some(t => p.textContent.toLowerCase().includes(t))) p.classList.add("hit");
-        });
-
-        document.querySelectorAll(".data-row").forEach(tr => {
-            const table = tr.dataset.table;
-            const idx = parseInt(tr.dataset.idx);
-            let rowData = null;
-            
-            if (table === 'daily') rowData = lastData.context.daily_aggregates[idx];
-            if (table === 'six') rowData = lastData.context.six_hour_aggregates[idx];
-            if (table === 'hourly') rowData = lastData.context.hourly[idx];
-            if (table === 'current') rowData = lastData.context.current_conditions;
-
-            if (rowData && toks.some(t => JSON.stringify(rowData).toLowerCase().includes(t))) {
-                tr.classList.add("row-hit");
-            }
-        });
+    function applyKeywordHighlight(kw) {
+      clearHighlights();
+      activeKeyword = kw;
+      const chips = document.querySelectorAll(".kw");
+      chips.forEach((c) => {
+        if (c.dataset.keyword === kw) c.classList.add("active");
+      });
+      document.querySelectorAll("#meteo-proof .proof-line").forEach((el) => {
+        if (textMatchesKeyword(el.textContent, kw)) el.classList.add("hit");
+      });
+      if (!lastContext) return;
+      document.querySelectorAll("tr.data-row").forEach((tr) => {
+        const t = tr.dataset.table;
+        const idx = parseInt(tr.dataset.idx, 10);
+        let arr = null;
+        if (t === "daily") arr = lastContext.daily_aggregates;
+        else if (t === "six") arr = lastContext.six_hour_aggregates;
+        else if (t === "hourly") arr = lastContext.hourly;
+        else if (t === "current") arr = lastContext.current_conditions ? [lastContext.current_conditions] : [];
+        if (!arr || !Number.isFinite(idx)) return;
+        const obj = arr[idx];
+        if (obj && rowMatchesKeyword(obj, kw)) tr.classList.add("row-hit");
+      });
     }
 
-    function createTable(rows, cols, tableId) {
-        if (!rows || rows.length === 0) return `<div style="padding: 2rem; text-align: center; color: var(--text-muted)">No diagnostic data available.</div>`;
-        
-        let html = `<table><thead><tr>`;
-        cols.forEach(c => html += `<th>${c.label}</th>`);
-        html += `</tr></thead><tbody>`;
-        
-        rows.forEach((r, i) => {
-            html += `<tr class="data-row" data-table="${tableId}" data-idx="${i}">`;
-            cols.forEach(c => html += `<td>${c.fn(r)}</td>`);
-            html += `</tr>`;
-        });
-        
-        html += `</tbody></table>`;
-        return html;
+    function renderTable(tableKey, rows, columns) {
+      if (!rows || !rows.length) return "<p class='meta-small'>No rows.</p>";
+      const th = columns.map((c) => `<th>${escapeHtml(c.label)}</th>`).join("");
+      const trs = rows.map((row, i) => {
+        const tds = columns.map((c) => `<td>${escapeHtml(c.fmt(row))}</td>`).join("");
+        return `<tr class="data-row" data-table="${escapeHtml(tableKey)}" data-idx="${i}">${tds}</tr>`;
+      });
+      return `<table><thead><tr>${th}</tr></thead><tbody>${trs}</tbody></table>`;
     }
 
-    async function execute() {
-        const query = el("#query").value.trim();
-        if (!query) return;
+    function renderDaily(daily) {
+      const cols = [
+        { label: "date", fmt: (r) => r.date_utc },
+        { label: "src", fmt: (r) => r.aggregate_source },
+        { label: "T mean", fmt: (r) => r.t_mean_c?.toFixed?.(1) ?? r.t_mean_c },
+        { label: "T min", fmt: (r) => r.t_min_c?.toFixed?.(1) ?? r.t_min_c },
+        { label: "T max", fmt: (r) => r.t_max_c?.toFixed?.(1) ?? r.t_max_c },
+        { label: "RH%", fmt: (r) => r.rh_mean_percent?.toFixed?.(0) ?? r.rh_mean_percent },
+        { label: "wind m/s", fmt: (r) => r.wind_speed_mean_ms?.toFixed?.(1) ?? r.wind_speed_mean_ms },
+        { label: "rain mm", fmt: (r) => r.precipitation_sum_mm?.toFixed?.(1) ?? r.precipitation_sum_mm },
+      ];
+      return renderTable("daily", daily, cols);
+    }
 
-        el("#loading").style.display = "flex";
-        el("#dashboard").style.display = "none";
-        el("#error-toast").style.display = "none";
-        el("#run").disabled = true;
+    function renderSix(six) {
+      const cols = [
+        { label: "start", fmt: (r) => r.window_start_utc },
+        { label: "end", fmt: (r) => r.window_end_utc },
+        { label: "T mean", fmt: (r) => r.t_mean_c?.toFixed?.(1) },
+        { label: "T min", fmt: (r) => r.t_min_c?.toFixed?.(1) },
+        { label: "T max", fmt: (r) => r.t_max_c?.toFixed?.(1) },
+        { label: "rain mm", fmt: (r) => r.precipitation_sum_mm?.toFixed?.(1) },
+        { label: "wind °", fmt: (r) => r.wind_direction_mean_deg?.toFixed?.(0) ?? "—" },
+      ];
+      return renderTable("six", six, cols);
+    }
 
-        try {
-            const res = await fetch(API, {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    query,
-                    context_style: el("#context_style").value,
-                    tone: el("#tone").value,
-                    length: "medium",
-                    domain: el("#domain").value
-                })
-            });
+    function renderHourly(h) {
+      const cols = [
+        { label: "time (UTC)", fmt: (r) => r.timestamp_utc },
+        { label: "cat", fmt: (r) => r.weather_category },
+        { label: "T", fmt: (r) => r.t_c?.toFixed?.(1) },
+        { label: "rain", fmt: (r) => r.precipitation_mm?.toFixed?.(2) },
+        { label: "wind", fmt: (r) => r.wind_speed_ms?.toFixed?.(1) },
+      ];
+      return renderTable("hourly", h, cols);
+    }
 
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.detail || "Pipeline Execution Failed");
+    function renderCurrent(c) {
+      if (!c) return "<p class='meta-small'>No current snapshot.</p>";
+      return renderTable("current", [c], [
+        { label: "time UTC", fmt: (r) => r.timestamp_utc },
+        { label: "T °C", fmt: (r) => r.t_c },
+        { label: "cond", fmt: (r) => r.condition_label },
+        { label: "cat", fmt: (r) => r.weather_category },
+        { label: "RH%", fmt: (r) => r.rh_percent },
+        { label: "wind", fmt: (r) => r.wind_speed_ms },
+        { label: "hPa", fmt: (r) => r.pressure_hpa ?? "—" },
+      ]);
+    }
 
-            lastData = data;
-            const ctx = data.context;
+    function renderProofLines(proof) {
+      const lines = String(proof || "")
+        .split(/\n+/)
+        .map((l) => l.trim())
+        .filter(Boolean);
+      if (!lines.length) return "<p class='meta-small'>(empty)</p>";
+      return lines.map((line) => `<p class="proof-line">${escapeHtml(line)}</p>`).join("");
+    }
 
-            // Render Tables
-            el("#panel-daily").innerHTML = createTable(ctx.daily_aggregates, [
-                {label: "Date", fn: r => r.date_utc},
-                {label: "Mean", fn: r => formatValue(r.t_mean_c) + "°"},
-                {label: "Min/Max", fn: r => `${formatValue(r.t_min_c)}/${formatValue(r.t_max_c)}`},
-                {label: "RH%", fn: r => formatValue(r.rh_mean_percent, 0)},
-                {label: "Wind", fn: r => formatValue(r.wind_speed_mean_ms) + "m/s"},
-                {label: "Precip", fn: r => formatValue(r.precipitation_sum_mm) + "mm"}
-            ], 'daily');
+    function setupTabs() {
+      $("#tabs").querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          $("#tabs").querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+          document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+          btn.classList.add("active");
+          $("#panel-" + btn.dataset.tab).classList.add("active");
+        });
+      });
+    }
 
-            el("#panel-six").innerHTML = createTable(ctx.six_hour_aggregates, [
-                {label: "Window", fn: r => r.window_start_utc.split('T')[1].substring(0,5)},
-                {label: "Temp", fn: r => formatValue(r.t_mean_c) + "°"},
-                {label: "Precip", fn: r => formatValue(r.precipitation_sum_mm) + "mm"},
-                {label: "Wind", fn: r => formatValue(r.wind_speed_mean_ms) + "m/s"},
-                {label: "Direction", fn: r => formatValue(r.wind_direction_mean_deg, 0) + "°"}
-            ], 'six');
+    async function runPipeline() {
+      $("#error").classList.remove("show");
+      $("#loading").classList.add("show");
+      $("#main").style.display = "none";
+      $("#run").disabled = true;
 
-            el("#panel-hourly").innerHTML = createTable(ctx.hourly, [
-                {label: "Time", fn: r => r.timestamp_utc.split('T')[1].substring(0,5)},
-                {label: "Cat", fn: r => r.weather_category},
-                {label: "Temp", fn: r => formatValue(r.t_c) + "°"},
-                {label: "Precip", fn: r => formatValue(r.precipitation_mm, 2)}
-            ], 'hourly');
+      const body = {
+        query: $("#query").value.trim() || null,
+        latitude: $("#lat").value ? parseFloat($("#lat").value) : null,
+        longitude: $("#lon").value ? parseFloat($("#lon").value) : null,
+        context_style: $("#context_style").value,
+        tone: $("#tone").value,
+        length: $("#length").value,
+        domain: $("#domain").value,
+        use_cache: false,
+      };
 
-            el("#panel-current").innerHTML = createTable(ctx.current_conditions ? [ctx.current_conditions] : [], [
-                {label: "Property", fn: r => "Current Status"},
-                {label: "Value", fn: r => r.condition_label},
-                {label: "Temp", fn: r => formatValue(r.t_c) + "°C"},
-                {label: "Wind", fn: r => formatValue(r.wind_speed_ms) + " m/s"}
-            ], 'current');
-
-            // Metadata
-            const loc = ctx.location;
-            el("#loc-badge").innerHTML = `<span class="badge" style="color: var(--text-primary); border-color: var(--text-primary)">${loc.city}, ${loc.country}</span>`;
-
-            // Keywords
-            const kwGrid = el("#keyword-grid");
-            kwGrid.innerHTML = "";
-            (data.meteorologist.keywords || []).forEach(k => {
-                const chip = document.createElement("div");
-                chip.className = "keyword-chip";
-                chip.textContent = k;
-                chip.onclick = () => applyHighlight(k);
-                kwGrid.appendChild(chip);
-            });
-
-            // Reasoning
-            el("#meteo-summary").textContent = data.meteorologist.summary;
-            el("#meteo-proof").innerHTML = data.meteorologist.proof.split('\n').map(l => `<div class="proof-line">${l}</div>`).join('');
-
-            // Final Report
-            el("#rep-title").textContent = data.report.header.title;
-            el("#rep-summary").textContent = data.report.analysis.summary;
-            
-            if (data.report.analysis.warnings) {
-                el("#warning-strip").textContent = data.report.analysis.warnings;
-                el("#warning-strip").style.display = "block";
-            } else {
-                el("#warning-strip").style.display = "none";
-            }
-
-            // Badges
-            let badgeHtml = `<span class="badge">Model: ${data.report_meta.writer_model || 'Gemini'}</span>`;
-            badgeHtml += `<span class="badge">Mode: ${ctx.context_mode.name}</span>`;
-            (data.degradation_codes || []).forEach(c => {
-                badgeHtml += `<span class="badge" style="color: var(--warning)">${c}</span>`;
-            });
-            el("#meta-badges").innerHTML = badgeHtml;
-
-            el("#dashboard").style.display = "grid";
-            
-            // Activate steps
-            document.querySelectorAll(".step").forEach((s, idx) => {
-                setTimeout(() => s.classList.add('active'), idx * 200);
-            });
-
-        } catch (e) {
-            el("#error-toast").textContent = e.message;
-            el("#error-toast").style.display = "block";
-            setTimeout(() => el("#error-toast").style.display = "none", 5000);
-        } finally {
-            el("#loading").style.display = "none";
-            el("#run").disabled = false;
+      try {
+        const res = await fetch(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const d = data.detail;
+          const msg =
+            typeof d === "string"
+              ? d
+              : Array.isArray(d)
+                ? d.map((x) => x.msg || JSON.stringify(x)).join("; ")
+                : JSON.stringify(d || data);
+          throw new Error(msg || res.statusText || "Request failed");
         }
+
+        const ctx = data.context;
+        lastContext = ctx;
+        $("#panel-daily").innerHTML = renderDaily(ctx.daily_aggregates || []);
+        $("#panel-six").innerHTML = renderSix(ctx.six_hour_aggregates || []);
+        $("#panel-hourly").innerHTML = renderHourly(ctx.hourly || []);
+        $("#panel-current").innerHTML = renderCurrent(ctx.current_conditions);
+
+        const met = data.meteorologist;
+        $("#meteo-summary").textContent = met.summary || "";
+        $("#meteo-proof").innerHTML = renderProofLines(met.proof);
+
+        const rep = data.report;
+        $("#rep-title").textContent = rep.header?.title || "";
+        $("#rep-info").textContent = rep.header?.information || "";
+        $("#rep-summary").textContent = rep.analysis?.summary || "";
+        $("#rep-proof").innerHTML = renderProofLines(rep.analysis?.proof);
+
+        const wb = $("#warnings");
+        wb.textContent = rep.analysis?.warnings ? "Warnings: " + rep.analysis.warnings : "";
+
+        const kwBox = $("#kw-box");
+        kwBox.querySelectorAll(".kw").forEach((k) => k.remove());
+        (met.keywords || []).forEach((kw) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "kw";
+          b.textContent = kw;
+          b.dataset.keyword = kw;
+          b.addEventListener("click", () => {
+            if (activeKeyword === kw) {
+              clearHighlights();
+              activeKeyword = null;
+              return;
+            }
+            applyKeywordHighlight(kw);
+          });
+          kwBox.appendChild(b);
+        });
+
+        const bd = $("#badges");
+        bd.innerHTML = "";
+        const loc = ctx.location || {};
+        const label = [loc.city, loc.administrative_region, loc.country].filter(Boolean).join(", ");
+        bd.innerHTML += `<span class="badge">${escapeHtml(label || "location")}</span>`;
+        bd.innerHTML += `<span class="badge">mode: ${escapeHtml(ctx.context_mode?.name || "")}</span>`;
+        (data.degradation_codes || []).slice(0, 6).forEach((c) => {
+          bd.innerHTML += `<span class="badge">${escapeHtml(c)}</span>`;
+        });
+
+        $("#main").style.display = "block";
+      } catch (e) {
+        $("#error").textContent = String(e.message || e);
+        $("#error").classList.add("show");
+      } finally {
+        $("#loading").classList.remove("show");
+        $("#run").disabled = false;
+      }
     }
 
-    // Tabs
-    el("#tabs").onclick = (e) => {
-        if (e.target.tagName !== 'BUTTON') return;
-        el("#tabs .active").classList.remove('active');
-        el(".tab-panel.active").classList.remove('active');
-        e.target.classList.add('active');
-        el("#panel-" + e.target.dataset.tab).classList.add('active');
-    };
-
-    el("#run").onclick = execute;
-    el("#query").onkeydown = (e) => (e.key === 'Enter') && execute();
-
-</script>
-
+    $("#run").addEventListener("click", runPipeline);
+    setupTabs();
+  </script>
 </body>
 </html>
