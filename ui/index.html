@@ -40,6 +40,32 @@
             --transition: all 0.4s var(--ease);
         }
 
+        body.light-mode {
+            --bg-deep: #ffffff;
+            --bg-surface: #fdfdfd;
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --border: rgba(0, 0, 0, 0.1);
+            --border-hover: rgba(0, 0, 0, 0.2);
+            
+            /* Text Colors */
+            --text-primary: #111111;
+            --text-secondary: #52525b;
+            --text-muted: #a1a1aa;
+            
+            /* Accents (B&W) */
+            --accent-primary: #000000;
+            --accent-secondary: #71717a;
+            --accent-gradient: linear-gradient(135deg, #000000 0%, #52525b 100%);
+            --accent-glow: rgba(0, 0, 0, 0.02);
+            
+            /* Semantic */
+            --success: #000000;
+            --warning: #a1a1aa;
+            --danger: #000000;
+            --highlight: rgba(0, 0, 0, 0.04);
+            --highlight-border: #000000;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -98,8 +124,28 @@
             color: var(--text-secondary);
             font-size: 1rem;
             max-width: 600px;
-            margin: 0 auto;
+            margin: 0 auto 1.5rem auto;
             letter-spacing: 0.02em;
+        }
+
+        .theme-toggle {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: var(--transition);
+            margin: 0 auto;
+            display: block;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--text-primary);
         }
 
         /* Pipeline Visualizer */
@@ -512,6 +558,8 @@
         <h1 class="text-gradient">AI-Meteorologist</h1>
         <p>A hierarchical reasoning pipeline that translates high-resolution meteorological data into structured professional insights.</p>
         
+        <button id="theme-btn" class="theme-toggle">Switch Theme</button>
+        
         <div class="pipeline-bar">
             <div class="step"><i></i> Geocoding</div>
             <div class="step"><i></i> Data Harvesting</div>
@@ -619,6 +667,20 @@
 <script>
     const el = (s) => document.querySelector(s);
     const API = "/api/pipeline";
+
+    // Theme Management
+    const themeBtn = el("#theme-btn");
+    const body = document.body;
+
+    if (localStorage.getItem("theme") === "light") {
+        body.classList.add("light-mode");
+    }
+
+    themeBtn.addEventListener("click", () => {
+        body.classList.toggle("light-mode");
+        const isLight = body.classList.contains("light-mode");
+        localStorage.setItem("theme", isLight ? "light" : "dark");
+    });
 
     let activeKeyword = null;
     let lastData = null;
