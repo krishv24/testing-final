@@ -3,320 +3,540 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hierarchical AI-Meteorologist — Demo</title>
+  <title>AI-Meteorologist — Elegance</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  
   <style>
     :root {
-      --bg: #0f1419;
-      --panel: #1a2332;
-      --border: #2d3a4f;
-      --text: #e7eef7;
-      --muted: #8b9cb3;
-      --accent: #3d8bfd;
-      --hit: rgba(61, 139, 253, 0.22);
-      --hit-border: #3d8bfd;
-      --kw: #7ee787;
-      --warn: #f0ad4e;
-      --font: "Segoe UI", system-ui, sans-serif;
-      --mono: ui-monospace, "Cascadia Code", monospace;
+      --bg: #f5f5dc;
+      --card-bg: #fdfcee; 
+      --border: #cbb799;
+      --text: #3d211a;
+      --muted: #a07856;
+      --accent: #6f4d38;
+      --accent-dark: #3d211a;
+      --hit: rgba(111, 77, 56, 0.1);
+      --hit-border: #6f4d38;
+      --kw: #6f4d38;
+      --warn: #a07856;
+      --font: 'Inter', system-ui, sans-serif;
+      --heading: 'Playfair Display', serif;
+      --mono: 'JetBrains Mono', "Cascadia Code", monospace;
+      --shadow: 0 12px 32px rgba(61, 33, 26, 0.05);
+      --radius: 16px;
     }
+    
     * { box-sizing: border-box; }
+    
     body {
       margin: 0;
       font-family: var(--font);
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 4rem;
     }
+
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
     header {
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-      background: var(--panel);
+      padding: 3rem 0 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
     }
-    header h1 { margin: 0 0 0.35rem; font-size: 1.15rem; font-weight: 600; }
-    header p { margin: 0; font-size: 0.8rem; color: var(--muted); max-width: 72ch; line-height: 1.45; }
+
+    header h1 { 
+      margin: 0 0 0.5rem; 
+      font-size: 2.75rem; 
+      font-weight: 600; 
+      color: var(--accent-dark); 
+      font-family: var(--heading);
+      letter-spacing: -0.02em;
+    }
+
+    header p { 
+      margin: 0 auto; 
+      font-size: 1rem; 
+      color: var(--muted); 
+      max-width: 600px; 
+      line-height: 1.6; 
+      font-weight: 300;
+    }
+
     .chain {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 0.75rem;
-      font-size: 0.72rem;
-      color: var(--muted);
+      justify-content: center;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--accent);
     }
+
     .chain span {
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      border: 1px solid var(--border);
-      background: var(--bg);
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      background: rgba(203, 183, 153, 0.2);
+      border: 1px solid rgba(203, 183, 153, 0.4);
     }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid rgba(203, 183, 153, 0.5);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .form-card {
+      padding: 2rem;
+    }
+
     .form {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 0.6rem;
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid var(--border);
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.25rem;
       align-items: end;
     }
-    label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.72rem; color: var(--muted); }
-    input, select, button {
-      font: inherit;
-      padding: 0.45rem 0.55rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--panel);
-      color: var(--text);
-    }
-    button.primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      grid-column: span 1;
-    }
-    button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0;
-      min-height: calc(100vh - 200px);
-    }
-    @media (max-width: 960px) {
-      .layout { grid-template-columns: 1fr; }
-    }
-    .pane {
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      min-height: 420px;
-    }
-    .pane:last-child { border-right: none; }
-    .pane-head {
-      padding: 0.6rem 1rem;
-      font-size: 0.75rem;
+
+    label { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 0.4rem; 
+      font-size: 0.75rem; 
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-      background: rgba(0,0,0,0.2);
+      letter-spacing: 0.04em;
+      color: var(--muted); 
     }
+
+    input, select {
+      font-family: var(--font);
+      font-size: 0.95rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(111, 77, 56, 0.1);
+    }
+
+    button.primary {
+      font-family: var(--font);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      width: 100%;
+    }
+
+    button.primary:hover:not(:disabled) {
+      background: var(--accent-dark);
+      transform: translateY(-1px);
+    }
+
+    button.primary:disabled { 
+      opacity: 0.6; 
+      cursor: not-allowed; 
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 2rem;
+      min-height: 600px;
+    }
+
+    @media (max-width: 1024px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    .pane-head {
+      padding: 1.25rem 1.5rem;
+      font-size: 1.1rem;
+      font-family: var(--heading);
+      font-style: italic;
+      font-weight: 600;
+      color: var(--accent-dark);
+      border-bottom: 1px solid rgba(203, 183, 153, 0.3);
+      background: rgba(203, 183, 153, 0.15);
+    }
+
     .tabs {
       display: flex;
-      gap: 0;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(203, 183, 153, 0.3);
+      padding: 0 1rem;
+      background: rgba(203, 183, 153, 0.05);
     }
+
     .tabs button {
-      flex: 1;
       border: none;
-      border-radius: 0;
-      border-bottom: 2px solid transparent;
       background: transparent;
       color: var(--muted);
       cursor: pointer;
-      padding: 0.5rem;
-      font-size: 0.8rem;
+      padding: 1rem 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 3px solid transparent;
+      transition: color 0.2s;
     }
+
     .tabs button.active {
-      color: var(--text);
+      color: var(--accent-dark);
       border-bottom-color: var(--accent);
-      background: rgba(61, 139, 253, 0.08);
     }
-    .tab-panel { display: none; flex: 1; overflow: auto; padding: 0.5rem; }
+
+    .tab-panel { 
+      display: none; 
+      padding: 1.5rem; 
+      overflow-x: auto;
+    }
+
     .tab-panel.active { display: block; }
+
     table {
       width: 100%;
-      border-collapse: collapse;
-      font-size: 0.72rem;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.8rem;
       font-family: var(--mono);
     }
+
     th, td {
-      border: 1px solid var(--border);
-      padding: 0.35rem 0.45rem;
+      border-bottom: 1px solid rgba(203, 183, 153, 0.3);
+      padding: 0.75rem 0.5rem;
       text-align: left;
+      color: var(--text);
     }
-    th { background: rgba(61, 139, 253, 0.12); color: var(--muted); font-weight: 500; }
+
+    th { 
+      color: var(--muted); 
+      font-weight: 600; 
+      text-transform: uppercase;
+      font-family: var(--font);
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+    }
+
+    tr.data-row { transition: background 0.15s; }
+    tr.data-row:hover { background: rgba(203, 183, 153, 0.1); }
+    
     tr.data-row.row-hit {
       background: var(--hit);
-      outline: 1px solid var(--hit-border);
+      border-left: 3px solid var(--hit-border);
     }
-    .report-pane { overflow: auto; padding: 0 1rem 1.5rem; }
+
+    .report-pane { padding: 0 0 2rem; }
+
+    .report-content {
+      padding: 1.5rem;
+    }
+
     .keywords {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.4rem;
-      margin: 0.75rem 0 1rem;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
       align-items: center;
     }
-    .keywords .hint { font-size: 0.72rem; color: var(--muted); width: 100%; margin-bottom: 0.25rem; }
+
+    .keywords .hint { 
+      font-size: 0.75rem; 
+      color: var(--muted); 
+      width: 100%; 
+      margin-bottom: 0.5rem;
+      font-style: italic;
+    }
+
     .kw {
       border: 1px solid var(--border);
-      background: var(--panel);
+      background: rgba(255, 255, 255, 0.5);
       color: var(--kw);
-      padding: 0.35rem 0.65rem;
+      padding: 0.4rem 1rem;
       border-radius: 999px;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
+      font-weight: 500;
       cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
+      transition: all 0.2s;
     }
-    .kw:hover { border-color: var(--kw); }
+
+    .kw:hover { 
+      border-color: var(--accent); 
+      background: rgba(203, 183, 153, 0.2); 
+    }
+
     .kw.active {
-      background: rgba(126, 231, 135, 0.15);
-      border-color: var(--kw);
-      box-shadow: 0 0 0 2px rgba(126, 231, 135, 0.25);
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(111, 77, 56, 0.2);
     }
+
     .stage {
-      margin-bottom: 1.25rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid rgba(203, 183, 153, 0.3);
     }
+
+    .stage:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
     .stage h3 {
-      margin: 0 0 0.5rem;
-      font-size: 0.7rem;
+      margin: 0 0 1rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--accent);
+      color: var(--muted);
+      font-weight: 600;
     }
+
     .proof-line {
-      margin: 0.35rem 0;
-      padding: 0.35rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.82rem;
-      line-height: 1.45;
-      border-left: 3px solid transparent;
+      margin: 0.5rem 0;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      border-left: 3px solid rgba(203, 183, 153, 0.3);
+      color: var(--text);
+      transition: all 0.2s;
     }
+
+    .proof-line:hover {
+      background: rgba(203, 183, 153, 0.1);
+    }
+
     .proof-line.hit {
       background: var(--hit);
       border-left-color: var(--hit-border);
     }
+
     .summary {
-      font-size: 0.88rem;
-      line-height: 1.55;
+      font-size: 1rem;
+      line-height: 1.7;
       white-space: pre-wrap;
+      color: var(--accent-dark);
     }
-    .final-title { font-size: 1.05rem; margin: 0 0 0.35rem; }
-    .preamble { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.75rem; }
+
+    .final-title { 
+      font-family: var(--heading);
+      font-size: 1.75rem; 
+      margin: 0 0 0.5rem; 
+      color: var(--accent-dark); 
+      font-weight: 600; 
+    }
+
+    .preamble { 
+      font-size: 0.9rem; 
+      color: var(--muted); 
+      margin-bottom: 1.5rem; 
+      font-style: italic;
+    }
+
     .error {
-      margin: 1rem 1.25rem;
-      padding: 0.75rem;
-      background: rgba(220, 80, 80, 0.15);
-      border: 1px solid #c44;
-      border-radius: 6px;
-      font-size: 0.85rem;
+      margin: 0 auto 2rem;
+      max-width: 1300px;
+      padding: 1rem 1.5rem;
+      background: rgba(160, 120, 86, 0.1);
+      border-left: 4px solid var(--warn);
+      border-radius: 0 8px 8px 0;
+      font-size: 0.9rem;
       display: none;
+      color: var(--accent-dark);
+      font-weight: 500;
     }
+
     .error.show { display: block; }
-    .badges { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.5rem 1rem; }
-    .badge {
-      font-size: 0.65rem;
-      padding: 0.15rem 0.4rem;
-      border-radius: 4px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      color: var(--muted);
+
+    .badges { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 0.5rem; 
+      margin-bottom: 1.5rem; 
     }
-    .loading { padding: 2rem; text-align: center; color: var(--muted); display: none; }
+
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      background: rgba(203, 183, 153, 0.2);
+      border: 1px solid rgba(203, 183, 153, 0.4);
+      color: var(--accent-dark);
+    }
+
+    .loading { 
+      padding: 4rem; 
+      text-align: center; 
+      color: var(--accent); 
+      display: none; 
+      font-family: var(--heading);
+      font-size: 1.25rem;
+      font-style: italic;
+    }
+
     .loading.show { display: block; }
-    .meta-small { font-size: 0.7rem; color: var(--muted); margin-top: 0.5rem; }
+    
+    .meta-small { 
+      font-size: 0.75rem; 
+      color: var(--muted); 
+      margin: 1.5rem 0 0.5rem; 
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    #warnings {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: rgba(160, 120, 86, 0.05);
+      border-left: 3px solid var(--warn);
+      color: var(--warn);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
+  
   <header>
-    <h1>Hierarchical AI-Meteorologist</h1>
-    <p>
-      <strong>Data → aggregation → structured reasoning → report.</strong>
-      Click a <em>keyword</em> to highlight matching lines in the meteorologist <strong>proof</strong> and supporting rows in the <strong>daily / 6-hour</strong> tables (visual coupling for verification).
-    </p>
+    <h1>AI-Meteorologist</h1>
+    <p>Data orchestration into structured reasoning and beautiful prose. Click a keyword to verify findings directly against the raw datasets.</p>
     <div class="chain">
-      <span>① Geo + Open-Meteo + climatology</span>
-      <span>② Daily &amp; 6-hour aggregates</span>
-      <span>③ Meteorologist (JSON schema)</span>
-      <span>④ Writer (tone / domain)</span>
+      <span>① Geo &amp; Climatology</span>
+      <span>② Advanced Aggregations</span>
+      <span>③ Meteorologist reasoning</span>
+      <span>④ Specialized Writer</span>
     </div>
   </header>
 
-  <form class="form" id="form" onsubmit="return false;">
-    <label>Location query
-      <input type="text" id="query" placeholder="e.g. Berlin" autocomplete="off" />
-    </label>
-    <label>Latitude (optional)
-      <input type="number" id="lat" step="any" placeholder="52.52" />
-    </label>
-    <label>Longitude (optional)
-      <input type="number" id="lon" step="any" placeholder="13.41" />
-    </label>
-    <label>Context
-      <select id="context_style">
-        <option value="hierarchical" selected>hierarchical</option>
-        <option value="baseline">baseline</option>
-      </select>
-    </label>
-    <label>Tone
-      <select id="tone">
-        <option value="technical">technical</option>
-        <option value="conversational" selected>conversational</option>
-        <option value="official">official</option>
-      </select>
-    </label>
-    <label>Length
-      <select id="length">
-        <option value="short">short</option>
-        <option value="medium" selected>medium</option>
-        <option value="long">long</option>
-      </select>
-    </label>
-    <label>Domain
-      <select id="domain">
-        <option value="general_public" selected>general public</option>
-        <option value="risk_analysis">risk analysis</option>
-        <option value="energy">energy</option>
-        <option value="extreme_weather">extreme weather</option>
-        <option value="urban_planning">urban planning</option>
-        <option value="agriculture">agriculture</option>
-      </select>
-    </label>
-    <button type="button" class="primary" id="run">Run full pipeline</button>
-  </form>
+  <div class="container">
+    <div class="card form-card">
+      <form class="form" id="form" onsubmit="return false;">
+        <label>Location query
+          <input type="text" id="query" placeholder="e.g. Venice, Italy" autocomplete="off" />
+        </label>
+        <label>Latitude (opt)
+          <input type="number" id="lat" step="any" placeholder="45.44" />
+        </label>
+        <label>Longitude (opt)
+          <input type="number" id="lon" step="any" placeholder="12.31" />
+        </label>
+        <label>Context
+          <select id="context_style">
+            <option value="hierarchical" selected>Hierarchical</option>
+            <option value="baseline">Baseline</option>
+          </select>
+        </label>
+        <label>Tone
+          <select id="tone">
+            <option value="technical">Technical</option>
+            <option value="conversational" selected>Conversational</option>
+            <option value="official">Official</option>
+          </select>
+        </label>
+        <label>Length
+          <select id="length">
+            <option value="short">Short</option>
+            <option value="medium" selected>Medium</option>
+            <option value="long">Long</option>
+          </select>
+        </label>
+        <label>Domain
+          <select id="domain">
+            <option value="general_public" selected>General Public</option>
+            <option value="risk_analysis">Risk Analysis</option>
+            <option value="energy">Energy</option>
+            <option value="extreme_weather">Extreme Weather</option>
+            <option value="urban_planning">Urban Planning</option>
+            <option value="agriculture">Agriculture</option>
+          </select>
+        </label>
+        <button type="button" class="primary" id="run">Generate Report</button>
+      </form>
+    </div>
 
-  <div class="error" id="error"></div>
-  <div class="loading" id="loading">Running pipeline (data + LLMs)…</div>
+    <div class="error" id="error"></div>
+    <div class="loading" id="loading">Synthesizing data and generating meteorological report...</div>
 
-  <div id="main" style="display:none;">
-    <div class="badges" id="badges"></div>
-    <div class="layout">
-      <section class="pane">
-        <div class="pane-head">Aggregated inputs (tables)</div>
-        <div class="tabs" id="tabs">
-          <button type="button" data-tab="daily" class="active">Daily</button>
-          <button type="button" data-tab="six">6-hour</button>
-          <button type="button" data-tab="hourly">Hourly</button>
-          <button type="button" data-tab="current">Current</button>
-        </div>
-        <div id="panel-daily" class="tab-panel active"></div>
-        <div id="panel-six" class="tab-panel"></div>
-        <div id="panel-hourly" class="tab-panel"></div>
-        <div id="panel-current" class="tab-panel"></div>
-      </section>
-      <section class="pane report-pane">
-        <div class="pane-head">Reasoning &amp; report</div>
-        <div class="keywords" id="kw-box">
-          <span class="hint">Keywords (meteorologist) — click to highlight proof + table rows</span>
-        </div>
-        <div class="stage" id="stage-meteo">
-          <h3>Stage 2 — Meteorologist (structured output)</h3>
-          <div class="summary" id="meteo-summary"></div>
-          <p class="meta-small">Proof (evidence block; must support the summary)</p>
-          <div id="meteo-proof"></div>
-        </div>
-        <div class="stage" id="stage-writer">
-          <h3>Stage 3 — Writer (style only; facts preserved)</h3>
-          <div class="final-title" id="rep-title"></div>
-          <div class="preamble" id="rep-info"></div>
-          <div class="summary" id="rep-summary"></div>
-          <p class="meta-small">Forwarded proof (edited for readability)</p>
-          <div id="rep-proof"></div>
-          <div id="warnings" style="margin-top:1rem;color:var(--warn);font-size:0.85rem;"></div>
-        </div>
-      </section>
+    <div id="main" style="display:none;">
+      <div class="badges" id="badges"></div>
+      
+      <div class="layout">
+        
+        <!-- Left Pane: Data & Analytics -->
+        <section class="card pane">
+          <div class="pane-head">Meteorological Arrays</div>
+          <div class="tabs" id="tabs">
+            <button type="button" data-tab="daily" class="active">Daily</button>
+            <button type="button" data-tab="six">6-Hour</button>
+            <button type="button" data-tab="hourly">Hourly</button>
+            <button type="button" data-tab="current">Current</button>
+          </div>
+          <div id="panel-daily" class="tab-panel active"></div>
+          <div id="panel-six" class="tab-panel"></div>
+          <div id="panel-hourly" class="tab-panel"></div>
+          <div id="panel-current" class="tab-panel"></div>
+        </section>
+
+        <!-- Right Pane: Report & Reasoning -->
+        <section class="card pane report-pane">
+          <div class="pane-head">Narrative &amp; Reasoning</div>
+          <div class="report-content">
+            
+            <div class="keywords" id="kw-box">
+              <span class="hint">Keywords (meteorologist) — click to highlight proof + table rows</span>
+            </div>
+            
+            <div class="stage" id="stage-writer">
+              <h3>Final Output</h3>
+              <div class="final-title" id="rep-title"></div>
+              <div class="preamble" id="rep-info"></div>
+              <div class="summary" id="rep-summary"></div>
+              <div id="warnings"></div>
+              <p class="meta-small">Forwarded Proof Elements</p>
+              <div id="rep-proof"></div>
+            </div>
+
+            <div class="stage" id="stage-meteo">
+              <h3>Raw Agent Reasoning</h3>
+              <div class="summary" id="meteo-summary" style="font-style: italic; color: var(--muted); font-size: 0.9em;"></div>
+              <p class="meta-small">Mathematical Proof</p>
+              <div id="meteo-proof"></div>
+            </div>
+
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 
@@ -364,7 +584,7 @@
       chips.forEach((c) => {
         if (c.dataset.keyword === kw) c.classList.add("active");
       });
-      document.querySelectorAll("#meteo-proof .proof-line").forEach((el) => {
+      document.querySelectorAll("#meteo-proof .proof-line, #rep-proof .proof-line").forEach((el) => {
         if (textMatchesKeyword(el.textContent, kw)) el.classList.add("hit");
       });
       if (!lastContext) return;
@@ -506,17 +726,23 @@
         $("#panel-current").innerHTML = renderCurrent(ctx.current_conditions);
 
         const met = data.meteorologist;
-        $("#meteo-summary").textContent = met.summary || "";
+        $("#meteo-summary").innerHTML = `<p>${met.summary || ""}</p>`;
         $("#meteo-proof").innerHTML = renderProofLines(met.proof);
 
         const rep = data.report;
         $("#rep-title").textContent = rep.header?.title || "";
         $("#rep-info").textContent = rep.header?.information || "";
-        $("#rep-summary").textContent = rep.analysis?.summary || "";
+        $("#rep-summary").innerHTML = `<p>${rep.analysis?.summary || ""}</p>`;
         $("#rep-proof").innerHTML = renderProofLines(rep.analysis?.proof);
 
         const wb = $("#warnings");
-        wb.textContent = rep.analysis?.warnings ? "Warnings: " + rep.analysis.warnings : "";
+        if (rep.analysis?.warnings) {
+          wb.style.display = "block";
+          wb.innerHTML = `<strong>Advisory:</strong> ${escapeHtml(rep.analysis.warnings)}`;
+        } else {
+          wb.style.display = "none";
+          wb.innerHTML = "";
+        }
 
         const kwBox = $("#kw-box");
         kwBox.querySelectorAll(".kw").forEach((k) => k.remove());
@@ -549,7 +775,7 @@
 
         $("#main").style.display = "block";
       } catch (e) {
-        $("#error").textContent = String(e.message || e);
+        $("#error").innerHTML = `<strong>Error:</strong> ${String(e.message || e)}`;
         $("#error").classList.add("show");
       } finally {
         $("#loading").classList.remove("show");
