@@ -18,7 +18,13 @@ The system utilizes a structured three-phase pipeline to ensure factual accuracy
 2.  **Hierarchical Temporal Aggregation**:
     *   Processes raw high-frequency hourly data into a structured hierarchy of 6-hour and daily aggregates.
     *   Applies statistical normalization and circular wind analysis to provide the LLM with "pre-reasoned" data points, reducing hallucination risks.
-    *   Employs a dynamic context strategy that adjusts the granularity of data (Hourly vs. 6-Hour) based on the forecast lead time to optimize token consumption and reasoning depth.
+    *   Employs a dynamic context strategy that adjusts the granularity of data (Hourly vs. 6-Hour) based on the forecast lead time (H):
+
+| Lead Time (H) | Mode | Payload Content |
+| :--- | :--- | :--- |
+| **< 7 Days** | Hierarchical (Full) | Metadata + Climatology + Daily + 6-hour + **Hourly** |
+| **> 7 Days** | Hierarchical (Lite) | Metadata + Climatology + Daily + 6-hour (Drops Hourly) |
+| **Custom** | Baseline | Metadata + Climatology + Full Hourly only |
 
 3.  **Bimodal Reasoning and Synthesis**:
     *   **The Meteorologist Agent**: Performs deterministic atmospheric analysis. It generates a "Proof" block—a verification layer that maps every narrative assertion to specific data signals in the aggregates.

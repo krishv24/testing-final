@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # openweather_api_key: str = "" (removed in favor of Open-Meteo)
     geonames_username: str = "demo"
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3-flash-preview"
     cds_url: str = ""
     cds_key: str = ""
     cache_dir: Path = Path(".cache")

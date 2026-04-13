@@ -11,7 +11,7 @@ def meteorologist_prompt(ctx: ContextPayload) -> str:
     hourly_note = (
         "Full hourly series is included."
         if ctx.context_mode.hierarchical_include_hourly and ctx.hourly
-        else "Hourly series omitted (lead time ≥ 5 days or token savings); rely on 6-hour and daily aggregates only."
+        else "Hourly series omitted (lead time ≥ 7 days or token savings); rely on 6-hour and daily aggregates only."
     )
     rt_note = (
         "The field `current_conditions` (when present) is the latest near-real-time snapshot from the provider at `timestamp_utc` — anchor the present/now state to it before discussing forecast evolution."

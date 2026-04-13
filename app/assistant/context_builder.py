@@ -91,7 +91,7 @@ async def run_assistant_pipeline(req: AssistantRequest, client: httpx.AsyncClien
     if req.context_style == "baseline":
         hierarchical_include_hourly = True
     else:
-        hierarchical_include_hourly = lead_h < 5 * 24
+        hierarchical_include_hourly = lead_h < 7 * 24 + 1
 
     mode = ContextMode(
         name="baseline" if req.context_style == "baseline" else "hierarchical",
