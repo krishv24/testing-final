@@ -47,7 +47,7 @@
     }
 
     .container {
-      max-width: 1300px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 0 2rem;
     }
@@ -171,17 +171,12 @@
     }
 
     .layout {
-      display: grid;
-      grid-template-columns: 1fr 1.2fr;
+      display: flex;
+      flex-direction: column;
       gap: 2rem;
-      min-height: 600px;
     }
 
-    @media (max-width: 1024px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
+
 
     .pane-head {
       padding: 1.25rem 1.5rem;
@@ -223,7 +218,7 @@
     .tab-panel {
       display: none;
       padding: 1.5rem;
-      overflow-x: auto;
+      overflow-x: visible;
     }
 
     .tab-panel.active {
@@ -241,9 +236,10 @@
     th,
     td {
       border-bottom: 1px solid rgba(203, 183, 153, 0.3);
-      padding: 0.75rem 0.5rem;
+      padding: 0.85rem 1rem;
       text-align: left;
       color: var(--text);
+      white-space: nowrap;
     }
 
     th {
@@ -251,8 +247,41 @@
       font-weight: 600;
       text-transform: uppercase;
       font-family: var(--font);
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       letter-spacing: 0.05em;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+    }
+
+    @media (max-width: 900px) {
+      .report-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+    }
+
+    .stage {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .stage-border {
+      border-right: 1px solid rgba(203, 183, 153, 0.3);
+      padding-right: 3rem;
+    }
+
+    @media (max-width: 900px) {
+      .stage-border {
+        border-right: none;
+        padding-right: 0;
+        border-bottom: 1px solid rgba(203, 183, 153, 0.3);
+        padding-bottom: 2rem;
+      }
     }
 
     tr.data-row {
@@ -542,22 +571,24 @@
               <span class="hint">Keywords (meteorologist) — click to highlight proof + table rows</span>
             </div>
 
-            <div class="stage" id="stage-writer">
-              <h3>Final Output</h3>
-              <div class="final-title" id="rep-title"></div>
-              <div class="preamble" id="rep-info"></div>
-              <div class="summary" id="rep-summary"></div>
-              <div id="warnings"></div>
-              <p class="meta-small">Forwarded Proof Elements</p>
-              <div id="rep-proof"></div>
-            </div>
+            <div class="report-grid">
+              <div class="stage stage-border" id="stage-writer">
+                <h3>Final Output</h3>
+                <div class="final-title" id="rep-title"></div>
+                <div class="preamble" id="rep-info"></div>
+                <div class="summary" id="rep-summary"></div>
+                <div id="warnings"></div>
+                <p class="meta-small">Forwarded Proof Elements</p>
+                <div id="rep-proof"></div>
+              </div>
 
-            <div class="stage" id="stage-meteo">
-              <h3>Raw Agent Reasoning</h3>
-              <div class="summary" id="meteo-summary"
-                style="font-style: italic; color: var(--muted); font-size: 0.9em;"></div>
-              <p class="meta-small">Mathematical Proof</p>
-              <div id="meteo-proof"></div>
+              <div class="stage" id="stage-meteo">
+                <h3>Raw Agent Reasoning</h3>
+                <div class="summary" id="meteo-summary"
+                  style="font-style: italic; color: var(--muted); font-size: 0.9em;"></div>
+                <p class="meta-small">Mathematical Proof</p>
+                <div id="meteo-proof"></div>
+              </div>
             </div>
 
           </div>
