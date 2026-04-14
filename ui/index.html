@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AI-Meteorologist — Elegance</title>
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400&display=swap"
+    rel="stylesheet">
+
   <style>
     :root {
       --bg: #f5f5dc;
-      --card-bg: #fdfcee; 
+      --card-bg: #fdfcee;
       --border: #cbb799;
       --text: #3d211a;
       --muted: #a07856;
@@ -28,9 +31,11 @@
       --shadow: 0 12px 32px rgba(61, 33, 26, 0.05);
       --radius: 16px;
     }
-    
-    * { box-sizing: border-box; }
-    
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: var(--font);
@@ -53,21 +58,21 @@
       margin-bottom: 2rem;
     }
 
-    header h1 { 
-      margin: 0 0 0.5rem; 
-      font-size: 2.75rem; 
-      font-weight: 600; 
-      color: var(--accent-dark); 
+    header h1 {
+      margin: 0 0 0.5rem;
+      font-size: 2.75rem;
+      font-weight: 600;
+      color: var(--accent-dark);
       font-family: var(--heading);
       letter-spacing: -0.02em;
     }
 
-    header p { 
-      margin: 0 auto; 
-      font-size: 1rem; 
-      color: var(--muted); 
-      max-width: 600px; 
-      line-height: 1.6; 
+    header p {
+      margin: 0 auto;
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 600px;
+      line-height: 1.6;
       font-weight: 300;
     }
 
@@ -111,18 +116,19 @@
       align-items: end;
     }
 
-    label { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 0.4rem; 
-      font-size: 0.75rem; 
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      font-size: 0.75rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      color: var(--muted); 
+      color: var(--muted);
     }
 
-    input, select {
+    input,
+    select {
       font-family: var(--font);
       font-size: 0.95rem;
       padding: 0.75rem 1rem;
@@ -133,7 +139,8 @@
       transition: all 0.2s;
     }
 
-    input:focus, select:focus {
+    input:focus,
+    select:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(111, 77, 56, 0.1);
@@ -158,9 +165,9 @@
       transform: translateY(-1px);
     }
 
-    button.primary:disabled { 
-      opacity: 0.6; 
-      cursor: not-allowed; 
+    button.primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .layout {
@@ -171,7 +178,9 @@
     }
 
     @media (max-width: 1024px) {
-      .layout { grid-template-columns: 1fr; }
+      .layout {
+        grid-template-columns: 1fr;
+      }
     }
 
     .pane-head {
@@ -211,13 +220,15 @@
       border-bottom-color: var(--accent);
     }
 
-    .tab-panel { 
-      display: none; 
-      padding: 1.5rem; 
+    .tab-panel {
+      display: none;
+      padding: 1.5rem;
       overflow-x: auto;
     }
 
-    .tab-panel.active { display: block; }
+    .tab-panel.active {
+      display: block;
+    }
 
     table {
       width: 100%;
@@ -227,31 +238,39 @@
       font-family: var(--mono);
     }
 
-    th, td {
+    th,
+    td {
       border-bottom: 1px solid rgba(203, 183, 153, 0.3);
       padding: 0.75rem 0.5rem;
       text-align: left;
       color: var(--text);
     }
 
-    th { 
-      color: var(--muted); 
-      font-weight: 600; 
+    th {
+      color: var(--muted);
+      font-weight: 600;
       text-transform: uppercase;
       font-family: var(--font);
       font-size: 0.7rem;
       letter-spacing: 0.05em;
     }
 
-    tr.data-row { transition: background 0.15s; }
-    tr.data-row:hover { background: rgba(203, 183, 153, 0.1); }
-    
+    tr.data-row {
+      transition: background 0.15s;
+    }
+
+    tr.data-row:hover {
+      background: rgba(203, 183, 153, 0.1);
+    }
+
     tr.data-row.row-hit {
       background: var(--hit);
       border-left: 3px solid var(--hit-border);
     }
 
-    .report-pane { padding: 0 0 2rem; }
+    .report-pane {
+      padding: 0 0 2rem;
+    }
 
     .report-content {
       padding: 1.5rem;
@@ -265,10 +284,10 @@
       align-items: center;
     }
 
-    .keywords .hint { 
-      font-size: 0.75rem; 
-      color: var(--muted); 
-      width: 100%; 
+    .keywords .hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+      width: 100%;
       margin-bottom: 0.5rem;
       font-style: italic;
     }
@@ -285,9 +304,9 @@
       transition: all 0.2s;
     }
 
-    .kw:hover { 
-      border-color: var(--accent); 
-      background: rgba(203, 183, 153, 0.2); 
+    .kw:hover {
+      border-color: var(--accent);
+      background: rgba(203, 183, 153, 0.2);
     }
 
     .kw.active {
@@ -346,18 +365,18 @@
       color: var(--accent-dark);
     }
 
-    .final-title { 
+    .final-title {
       font-family: var(--heading);
-      font-size: 1.75rem; 
-      margin: 0 0 0.5rem; 
-      color: var(--accent-dark); 
-      font-weight: 600; 
+      font-size: 1.75rem;
+      margin: 0 0 0.5rem;
+      color: var(--accent-dark);
+      font-weight: 600;
     }
 
-    .preamble { 
-      font-size: 0.9rem; 
-      color: var(--muted); 
-      margin-bottom: 1.5rem; 
+    .preamble {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
       font-style: italic;
     }
 
@@ -374,13 +393,15 @@
       font-weight: 500;
     }
 
-    .error.show { display: block; }
+    .error.show {
+      display: block;
+    }
 
-    .badges { 
-      display: flex; 
-      flex-wrap: wrap; 
-      gap: 0.5rem; 
-      margin-bottom: 1.5rem; 
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
     }
 
     .badge {
@@ -395,22 +416,24 @@
       color: var(--accent-dark);
     }
 
-    .loading { 
-      padding: 4rem; 
-      text-align: center; 
-      color: var(--accent); 
-      display: none; 
+    .loading {
+      padding: 4rem;
+      text-align: center;
+      color: var(--accent);
+      display: none;
       font-family: var(--heading);
       font-size: 1.25rem;
       font-style: italic;
     }
 
-    .loading.show { display: block; }
-    
-    .meta-small { 
-      font-size: 0.75rem; 
-      color: var(--muted); 
-      margin: 1.5rem 0 0.5rem; 
+    .loading.show {
+      display: block;
+    }
+
+    .meta-small {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin: 1.5rem 0 0.5rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -426,11 +449,13 @@
     }
   </style>
 </head>
+
 <body>
-  
+
   <header>
     <h1>AI-Meteorologist</h1>
-    <p>Data orchestration into structured reasoning and beautiful prose. Click a keyword to verify findings directly against the raw datasets.</p>
+    <p>Data orchestration into structured reasoning and beautiful prose. Click a keyword to verify findings directly
+      against the raw datasets.</p>
     <div class="chain">
       <span>① Geo &amp; Climatology</span>
       <span>② Advanced Aggregations</span>
@@ -490,9 +515,9 @@
 
     <div id="main" style="display:none;">
       <div class="badges" id="badges"></div>
-      
+
       <div class="layout">
-        
+
         <!-- Left Pane: Data & Analytics -->
         <section class="card pane">
           <div class="pane-head">Meteorological Arrays</div>
@@ -512,11 +537,11 @@
         <section class="card pane report-pane">
           <div class="pane-head">Narrative &amp; Reasoning</div>
           <div class="report-content">
-            
+
             <div class="keywords" id="kw-box">
               <span class="hint">Keywords (meteorologist) — click to highlight proof + table rows</span>
             </div>
-            
+
             <div class="stage" id="stage-writer">
               <h3>Final Output</h3>
               <div class="final-title" id="rep-title"></div>
@@ -529,7 +554,8 @@
 
             <div class="stage" id="stage-meteo">
               <h3>Raw Agent Reasoning</h3>
-              <div class="summary" id="meteo-summary" style="font-style: italic; color: var(--muted); font-size: 0.9em;"></div>
+              <div class="summary" id="meteo-summary"
+                style="font-style: italic; color: var(--muted); font-size: 0.9em;"></div>
               <p class="meta-small">Mathematical Proof</p>
               <div id="meteo-proof"></div>
             </div>
@@ -622,6 +648,7 @@
         { label: "RH%", fmt: (r) => r.rh_mean_percent?.toFixed?.(0) ?? r.rh_mean_percent },
         { label: "wind m/s", fmt: (r) => r.wind_speed_mean_ms?.toFixed?.(1) ?? r.wind_speed_mean_ms },
         { label: "rain mm", fmt: (r) => r.precipitation_sum_mm?.toFixed?.(1) ?? r.precipitation_sum_mm },
+        { label: "hPa", fmt: (r) => r.pressure_mean_hpa?.toFixed?.(1) ?? "—" },
       ];
       return renderTable("daily", daily, cols);
     }
@@ -635,6 +662,7 @@
         { label: "T max", fmt: (r) => r.t_max_c?.toFixed?.(1) },
         { label: "rain mm", fmt: (r) => r.precipitation_sum_mm?.toFixed?.(1) },
         { label: "wind °", fmt: (r) => r.wind_direction_mean_deg?.toFixed?.(0) ?? "—" },
+        { label: "hPa", fmt: (r) => r.pressure_mean_hpa?.toFixed?.(1) ?? "—" },
       ];
       return renderTable("six", six, cols);
     }
@@ -646,6 +674,7 @@
         { label: "T", fmt: (r) => r.t_c?.toFixed?.(1) },
         { label: "rain", fmt: (r) => r.precipitation_mm?.toFixed?.(2) },
         { label: "wind", fmt: (r) => r.wind_speed_ms?.toFixed?.(1) },
+        { label: "hPa", fmt: (r) => r.pressure_hpa?.toFixed?.(1) ?? "—" },
       ];
       return renderTable("hourly", h, cols);
     }
@@ -659,7 +688,7 @@
         { label: "cat", fmt: (r) => r.weather_category },
         { label: "RH%", fmt: (r) => r.rh_percent },
         { label: "wind", fmt: (r) => r.wind_speed_ms },
-        { label: "hPa", fmt: (r) => r.pressure_hpa ?? "—" },
+        { label: "hPa", fmt: (r) => r.pressure_hpa?.toFixed?.(1) ?? "—" },
       ]);
     }
 
@@ -787,4 +816,5 @@
     setupTabs();
   </script>
 </body>
+
 </html>

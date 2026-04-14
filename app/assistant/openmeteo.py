@@ -88,7 +88,7 @@ def _daily_row(data: dict[str, list[Any]], idx: int) -> DailyAggregateRow:
         precipitation_sum_mm=float(data["precipitation_sum"][idx] if data["precipitation_sum"][idx] is not None else 0.0),
         td_mean_c=0.0,
         visibility_mean_m=None,
-        pressure_mean_hpa=None,
+        pressure_mean_hpa=float(data["surface_pressure_mean"][idx]) if data.get("surface_pressure_mean") and data["surface_pressure_mean"][idx] is not None else None,
     )
 
 
@@ -100,7 +100,7 @@ async def fetch_forecast(
         "longitude": lon,
         "current": "temperature_2m,weather_code,precipitation,relative_humidity_2m,apparent_temperature,dew_point_2m,wind_speed_10m,wind_direction_10m,wind_gusts_10m,visibility,surface_pressure",
         "hourly": "temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation,weather_code,surface_pressure,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
-        "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max",
+        "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,surface_pressure_mean",
         "timezone": "UTC",
         "wind_speed_unit": "ms"
     }
