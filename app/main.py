@@ -53,8 +53,8 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup() -> None:
-    get_settings()
-    logger.info("Startup complete")
+    s = get_settings()
+    logger.info("Startup complete. Active Gemini Model: %s", s.gemini_model)
 
 
 @app.get("/health")

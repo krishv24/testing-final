@@ -829,6 +829,9 @@
         const label = [loc.city, loc.administrative_region, loc.country].filter(Boolean).join(", ");
         bd.innerHTML += `<span class="badge">${escapeHtml(label || "location")}</span>`;
         bd.innerHTML += `<span class="badge">mode: ${escapeHtml(ctx.context_mode?.name || "")}</span>`;
+        if (data.report && data.report.meteorologist_model) {
+          bd.innerHTML += `<span class="badge">model: ${escapeHtml(data.report.meteorologist_model)}</span>`;
+        }
         (data.degradation_codes || []).slice(0, 6).forEach((c) => {
           bd.innerHTML += `<span class="badge">${escapeHtml(c)}</span>`;
         });

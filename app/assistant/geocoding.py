@@ -27,11 +27,11 @@ async def _reverse_geocode(lat: float, lon: float, client: httpx.AsyncClient) ->
     return geonames[0] if geonames else None
 
 
-async def fetch_geonames_search(q: str, client: httpx.AsyncClient) -> dict[str, Any]:
+async def fetch_geonames_search(q: str, client: httpx.AsyncClient, max_rows: int = 10) -> dict[str, Any]:
     settings = get_settings()
     params = {
         "q": q,
-        "maxRows": 1,
+        "maxRows": max_rows,
         "username": settings.geonames_username,
         "style": "FULL",
     }
@@ -96,6 +96,37 @@ async def fetch_wikipedia_summary(title_hint: str, client: httpx.AsyncClient) ->
     return None
 
 
+def _score_georesult(g: dict[str, Any], query: str) -> float:
+    """Score a GeoNames result based on name match and feature type."""
+    score = 0.0
+    name = (g.get("name") or "").lower()
+    toponym = (g.get("toponymName") or "").lower()
+    q = query.lower()
+
+    # Priority 1: Exact name match
+    if q == name or q == toponym:
+        score += 100.0
+    elif q.startswith(name) or name.startswith(q):
+        score += 50.0
+    elif any(token in name for token in q.split() if len(token) > 2):
+        score += 20.0
+
+    # Priority 2: Feature classes (prefer cities/populated places)
+    fclass = g.get("fclass")
+    fcode = g.get("fcode")
+    if fclass == "P":
+        score += 30.0
+        if fcode in {"PPLC", "PPLA", "PPLA2"}:
+            score += 20.0
+    
+    # Priority 3: Population as tie-breaker
+    pop = float(g.get("population") or 0)
+    if pop > 0:
+        score += min(10.0, pop / 1000000.0)
+
+    return score
+
+
 async def resolve_location(
     *,
     query: Optional[str],
@@ -128,10 +159,14 @@ async def resolve_location(
     if not query:
         raise ValueError("Either query or lat/lon is required")
 
-    data = await fetch_geonames_search(query, client)
+    data = await fetch_geonames_search(query, client, max_rows=20)
     geonames = data.get("geonames") or []
     if not geonames:
         raise ValueError(f"No GeoNames result for query: {query}")
+        
+    # Sort by custom score
+    geonames.sort(key=lambda x: _score_georesult(x, query), reverse=True)
+    
     g = geonames[0]
     lat_f = float(g["lat"])
     lon_f = float(g["lng"])
