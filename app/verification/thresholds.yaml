@@ -32,6 +32,8 @@ precipitation_mm:
 temperature_change_c:
   significant_drop: -4.0   # temperature change over 12-24 hours
   significant_rise: 4.0    # temperature change over 12-24 hours
+
+temperature_absolute_c:
   extreme_cold: 0.0        # absolute temperature threshold for cold warnings
   extreme_heat: 35.0       # absolute temperature threshold for heat warnings
 

@@ -113,11 +113,27 @@ class ContextPayload(BaseModel):
 # --- Meteorologist (Block 2) ---
 
 
+class WeatherClaim(BaseModel):
+    claim_id: str = Field(description="Unique claim identifier (e.g., CLAIM_001)")
+    variable: str = Field(description="Name of the meteorological variable (e.g., temperature, wind_speed, precipitation)")
+    assertion_type: str = Field(description="Type of assertion (e.g., trend, threshold_exceeded, comparison_to_normal)")
+    window_start_utc: str = Field(description="ISO timestamp of the start of the time window for the claim")
+    window_end_utc: str = Field(description="ISO timestamp of the end of the time window for the claim")
+    threshold_or_delta: str = Field(description="Numerical threshold or expected delta/change (e.g., > 25.0, +5.0)")
+    data_scale: Literal["hourly", "six_hour", "daily", "climatology", "current"] = Field(
+        description="Data scale or table from which this claim was derived"
+    )
+
 class MeteorologistOutput(BaseModel):
     summary: str
     proof: str
     keywords: list[str] = Field(default_factory=list, min_length=3, max_length=5)
     warnings: Optional[str] = None
+    claims: list[WeatherClaim] = Field(default_factory=list)
+    causal_chain: list[str] = Field(default_factory=list)
+    reasoning_flags: list[str] = Field(default_factory=list)
+    confidence_report: Optional[dict[str, Any]] = None
+
 
 
 # --- Writer (Block 3) ---

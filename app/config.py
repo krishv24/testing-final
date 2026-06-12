@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     cache_dir: Path = Path(".cache")
 
     geonames_base: str = "http://api.geonames.org"
+    verification_threshold: float = 0.55
+
 
     # Climate normals period for Meteostat Python library (WMO-style; matches ERA5 fallback window)
     meteostat_normals_start_year: int = 1991

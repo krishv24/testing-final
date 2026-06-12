@@ -38,9 +38,9 @@ You must output a single JSON object with exactly these keys:
     - "assertion_type": string, the type of assertion (e.g., "trend", "threshold_exceeded", "comparison_to_normal").
     - "window_start_utc": string, ISO timestamp or date of the start of the time window for the claim.
     - "window_end_utc": string, ISO timestamp or date of the end of the time window for the claim.
-    - "threshold_or_delta": string, the numerical threshold or expected delta/change (e.g., "> 25.0", "+5.0", "< 10.0").
+    - "threshold_or_delta": string, the numerical threshold or expected delta/change (e.g., "> 25.0", "+5.0", "< 10.0"). MUST be a single numeric value with an inequality operator or delta sign; never write a range (do not use "to", "-", or multiple numbers).
     - "data_scale": string, the scale of data the claim was derived from. Must be one of: "hourly", "six_hour", "daily", "climatology", or "current".
-- "causal_chain": array of strings. An ordered list of meteorological event strings depicting the physical or causal progression of the forecast weather (e.g., ["incoming cold front", "drop in surface pressure", "convective instability triggering precipitation", "post-frontal dry intrusion"]).
+- "causal_chain": array of strings. An ordered list of meteorological event strings depicting the physical or causal progression of the forecast weather. You MUST use ONLY items from this exact vocabulary list: pressure_drop, pressure_rise, stable_pressure, wind_increase, light_winds, wind_gusts, high_humidity, dry_air, rainfall, no_rain, warming, cooling, extreme_heat, low_visibility, fog_persistence, thunderstorm. Do not use any other phrases or descriptions.
 - "reasoning_flags": array of strings. List of any uncertainties, potential data anomalies, or confidence warning strings you want to flag (e.g., "climatology_unavailable", "rapid_wind_shift_low_confidence", or an empty list if none).
 
 Rules:

@@ -211,3 +211,24 @@ rules:
       threshold: 3.4
     confidence_weight: 0.80
     expected_lag_hours: 0.0
+
+  - rule_id: "RULE_016"
+    name: "Fog Persistence Rule"
+    description: "High humidity, stable pressure, and light winds favor the persistence of fog over time."
+    antecedents:
+      - variable: "relative_humidity"
+        condition: "greater_than"
+        threshold: 90.0
+      - variable: "pressure_change_6h"
+        condition: "between"
+        threshold: [-1.0, 1.0]
+      - variable: "wind_speed"
+        condition: "less_than_or_equal"
+        threshold: 3.4
+    consequent:
+      variable: "fog_persistence"
+      condition: "equals"
+      threshold: "persistent"
+    confidence_weight: 0.80
+    expected_lag_hours: 4.0
+
