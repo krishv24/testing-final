@@ -5,6 +5,7 @@ import json
 from app.schemas import ContextPayload, ReportParams
 
 
+
 def meteorologist_prompt(ctx: ContextPayload) -> str:
     payload = ctx.model_dump(mode="json")
     mode_note = ctx.context_mode.name
@@ -31,6 +32,16 @@ You must output a single JSON object with exactly these keys:
 - "proof": string, a compact bullet-style or short-paragraph block listing observable data signals that justify the summary (specific numbers, trends, durations). Cover where applicable: pressure tendencies, wind speed changes, wind direction shifts, daily temperature amplitude, precipitation duration and intensity, humidity trends. Every claim in summary must be traceable here.
 - "keywords": array of 3 to 5 short strings using controlled meteorological vocabulary (e.g. cooling trend, frontal passage, heavy rain, strong wind, unstable airmass, marine influence, overcast, light rain). Each keyword must correspond to at least one proof signal and at least one aggregate in the tables.
 - "warnings": optional string. Include ONLY if data show hazardous or clearly anomalous conditions versus climatology (e.g. sustained winds far above normals, rainfall far above typical daily totals, icing risk, flooding risk from extreme multi-day rain). Each warning must cite data. Omit this key entirely if conditions are not extreme.
+- "claims": array of objects. Every directional or threshold-based statement in the "summary" must have a corresponding entry in this list. If you cannot identify a specific number from the data tables to support a claim, do not make that claim in the "summary". Each object must contain:
+    - "claim_id": string, a unique identifier (e.g., "CLAIM_001").
+    - "variable": string, the variable name (e.g., "temperature", "wind_speed", "precipitation").
+    - "assertion_type": string, the type of assertion (e.g., "trend", "threshold_exceeded", "comparison_to_normal").
+    - "window_start_utc": string, ISO timestamp or date of the start of the time window for the claim.
+    - "window_end_utc": string, ISO timestamp or date of the end of the time window for the claim.
+    - "threshold_or_delta": string, the numerical threshold or expected delta/change (e.g., "> 25.0", "+5.0", "< 10.0").
+    - "data_scale": string, the scale of data the claim was derived from. Must be one of: "hourly", "six_hour", "daily", "climatology", or "current".
+- "causal_chain": array of strings. An ordered list of meteorological event strings depicting the physical or causal progression of the forecast weather (e.g., ["incoming cold front", "drop in surface pressure", "convective instability triggering precipitation", "post-frontal dry intrusion"]).
+- "reasoning_flags": array of strings. List of any uncertainties, potential data anomalies, or confidence warning strings you want to flag (e.g., "climatology_unavailable", "rapid_wind_shift_low_confidence", or an empty list if none).
 
 Rules:
 - Rely primarily on aggregate values; do not over-weight single-hour spikes unless they persist.
@@ -42,6 +53,7 @@ Rules:
 
 Respond with JSON only, no markdown fences.
 """
+
 
 
 def writer_prompt(meteorologist: dict, params: ReportParams, ctx: ContextPayload) -> str:
