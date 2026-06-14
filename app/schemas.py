@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # --- Location & climatology ---
@@ -127,12 +127,28 @@ class WeatherClaim(BaseModel):
 class MeteorologistOutput(BaseModel):
     summary: str
     proof: str
-    keywords: list[str] = Field(default_factory=list, min_length=3, max_length=5)
+    keywords: list[str] = Field(default_factory=list, min_length=3)
     warnings: Optional[str] = None
     claims: list[WeatherClaim] = Field(default_factory=list)
     causal_chain: list[str] = Field(default_factory=list)
     reasoning_flags: list[str] = Field(default_factory=list)
     confidence_report: Optional[dict[str, Any]] = None
+
+    @field_validator("proof", "summary", mode="before")
+    @classmethod
+    def coerce_to_string(cls, v):
+        """LLMs sometimes return these as a list of strings; join them."""
+        if isinstance(v, list):
+            return "\n".join(str(item) for item in v)
+        return v
+
+    @field_validator("keywords", mode="before")
+    @classmethod
+    def truncate_keywords(cls, v: list[str]) -> list[str]:
+        """LLMs occasionally return >5 keywords; silently truncate to 5."""
+        if isinstance(v, list) and len(v) > 5:
+            return v[:5]
+        return v
 
 
 

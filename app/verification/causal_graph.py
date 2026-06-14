@@ -48,10 +48,10 @@ class CausalGraph:
             return "stable_pressure"
         if "thunderstorm" in s or "storm" in s:
             return "thunderstorm"
-        if "rain" in s or "precipitation" in s or "shower" in s:
-            return "rainfall"
         if "no_rain" in s or "clear" in s or "sunny" in s or "insolation" in s:
             return "no_rain"
+        if "rain" in s or "precipitation" in s or "shower" in s:
+            return "rainfall"
         if "fog_persistence" in s:
             return "fog_persistence"
         if "fog" in s or "visibility" in s or "mist" in s:
@@ -212,6 +212,11 @@ class CausalGraph:
             
         normalized_chain = [self._normalize_node(node) for node in causal_chain]
         
+        # DEBUG: Print the full normalized chain and raw input for diagnosis
+        print(f"[DEBUG validate_chain] Raw chain:        {causal_chain}")
+        print(f"[DEBUG validate_chain] Normalized chain:  {normalized_chain}")
+        print(f"[DEBUG validate_chain] Forbidden edges:   {self.invalid_edges}")
+        
         invalid_transitions = []
         missing_intermediates = []
         transition_scores = []
@@ -225,7 +230,9 @@ class CausalGraph:
                 transition_scores.append(1.0)
                 continue
             # 1. Check if the transition is explicitly marked as physically invalid
+            print(f"[DEBUG validate_chain] Checking transition: ({u}, {v}) | in invalid_edges={( u, v) in self.invalid_edges}")
             if (u, v) in self.invalid_edges or (self._normalize_node(u), self._normalize_node(v)) in self.invalid_edges:
+                print(f"[DEBUG validate_chain] *** FORBIDDEN EDGE HIT: ({u}, {v}) from raw ({causal_chain[i]}, {causal_chain[i+1]})")
                 invalid_transitions.append((causal_chain[i], causal_chain[i+1]))
                 transition_scores.append(0.0)
                 has_forbidden_edges = True

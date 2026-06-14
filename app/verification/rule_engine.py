@@ -37,7 +37,7 @@ class MeteorologicalRuleEngine:
             "cooling": ("temperature_change", "down"),
             "low_visibility": ("visibility", "down"),
             "fog_persistence": ("fog_persistence", "neutral"),
-            "thunderstorm": ("weather_category", "up")
+            "thunderstorm": ("weather_category", "up"),
         }
 
     def _load_rules(self):
@@ -361,7 +361,19 @@ class MeteorologicalRuleEngine:
                         ant_indices_lists.append(indices_list)
                         
                 if len(ant_indices_lists) == len(rule_antecedents):
-                    fired_via_chain = True
+                    # Magnitude guard: only allow chain-based firing for rules
+                    # whose antecedents are all categorical (string thresholds).
+                    # Numeric-threshold rules must fire via claims path only,
+                    # where magnitude is properly validated.
+                    all_categorical = all(
+                        isinstance(ant.get("threshold"), str)
+                        for ant in rule_antecedents
+                    )
+                    if not all_categorical:
+                        # Skip chain firing for numeric rules — rely on claims match only
+                        pass
+                    else:
+                        fired_via_chain = True
                     
                     # Consequent event mapping
                     cons_chain_nodes = []

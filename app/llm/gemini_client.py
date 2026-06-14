@@ -66,7 +66,7 @@ async def generate_json_text(prompt: str, *, temperature: float = 0.35) -> str:
                 config=genai.types.GenerateContentConfig(
                     temperature=temperature,
                     response_mime_type="application/json",
-                    max_output_tokens=4000,
+                    max_output_tokens=4096,
                 ),
             )
             elapsed = time.perf_counter() - t0
