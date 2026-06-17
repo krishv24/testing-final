@@ -19,6 +19,7 @@ from app.verification.rule_engine import MeteorologicalRuleEngine
 from app.verification.causal_graph import CausalGraph
 from app.verification.temporal_checker import TemporalConsistencyChecker
 from app.verification.confidence_scorer import ConfidenceScorer
+from app.verification.evaluator import EvaluationTracker
 
 logger = logging.getLogger(__name__)
 
@@ -121,6 +122,20 @@ async def run_meteorologist(ctx: ContextPayload, *, use_cache: bool = True) -> t
     # Attach confidence report to meteorologist output object
     out = MeteorologistOutput.model_validate(final_data)
     out.confidence_report = final_report
+
+    # Record evaluation metrics (never crash the pipeline)
+    try:
+        tracker = EvaluationTracker()
+        tracker.record_run(
+            fact_results=fact_results,
+            rule_results=rule_results,
+            causal_result=causal_results,
+            temporal_result=temporal_results,
+            confidence_report=final_report,
+            location_query=ctx.location.city if ctx.location else None,
+        )
+    except Exception as e:
+        logger.warning("EvaluationTracker failed (non-fatal): %s", e)
 
     cache_set_json(
         "meteorologist",
