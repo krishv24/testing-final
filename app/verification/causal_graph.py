@@ -184,6 +184,8 @@ class CausalGraph:
         self.graph.add_edge("wind_increase", "thunderstorm", confidence=0.75, lag=1.0, rule_id="SYS_LINK_010")
         self.graph.add_edge("fog_persistence", "cooling", confidence=0.70, lag=2.0, rule_id="SYS_LINK_011")
         self.graph.add_edge("wind_gusts", "warming", confidence=0.65, lag=1.0, rule_id="SYS_LINK_012")
+        self.graph.add_edge("rainfall", "thunderstorm", confidence=0.80, lag=0.0, rule_id="SYS_LINK_013")
+        self.graph.add_edge("thunderstorm", "wind_gusts", confidence=0.85, lag=0.0, rule_id="SYS_LINK_014")
 
     def validate_chain(self, causal_chain: List[str]) -> Dict[str, Any]:
         """

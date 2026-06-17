@@ -4,6 +4,6 @@
 
 weights:
   data_fact: 0.35        # Weight for DataFactValidator score
-  met_rule: 0.25         # Weight for MeteorologicalRuleEngine score
+  met_rule: 0.10       # Weight for MeteorologicalRuleEngine score
   causal_graph: 0.20     # Weight for CausalGraph validity score
   temporal_consistency: 0.20 # Weight for TemporalConsistencyChecker score

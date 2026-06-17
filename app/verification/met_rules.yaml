@@ -55,7 +55,7 @@ rules:
       variable: "precipitation"
       condition: "greater_than_or_equal"
       threshold: 7.6
-    confidence_weight: 0.80
+    confidence_weight: 0.0
     expected_lag_hours: 0.0
 
   - rule_id: "RULE_005"
@@ -156,47 +156,47 @@ rules:
     confidence_weight: 0.75
     expected_lag_hours: 2.0
 
-  - rule_id: "RULE_012"
-    name: "Rainfall Saturation Effect"
-    description: "Moderate to heavy rain processes will saturate the near-surface air, driving relative humidity up."
-    antecedent:
-      variable: "precipitation"
-      condition: "greater_than"
-      threshold: 2.5
-    consequent:
-      variable: "relative_humidity"
-      condition: "greater_than"
-      threshold: 85.0
-    confidence_weight: 0.90
-    expected_lag_hours: 1.0
-
-  - rule_id: "RULE_013"
-    name: "Evaporative Cooling Drop"
-    description: "The onset of steady rain cools the surrounding air via evaporation, causing temperature to drop."
-    antecedent:
-      variable: "precipitation"
-      condition: "greater_than"
-      threshold: 5.0
-    consequent:
-      variable: "temperature_change_3h"
-      condition: "less_than"
-      threshold: -2.0
-    confidence_weight: 0.65
-    expected_lag_hours: 1.0
-
-  - rule_id: "RULE_014"
-    name: "Heavy Rain Wind Gusts"
-    description: "Heavy rain indicates convective activity, which is highly correlated with sudden wind gusts from downdrafts."
-    antecedent:
-      variable: "precipitation"
-      condition: "greater_than"
-      threshold: 10.0
-    consequent:
-      variable: "wind_gust"
-      condition: "greater_than_or_equal"
-      threshold: 15.0
-    confidence_weight: 0.75
-    expected_lag_hours: 0.5
+#  - rule_id: "RULE_012"
+#    name: "Rainfall Saturation Effect"
+#    description: "Moderate to heavy rain processes will saturate the near-surface air, driving relative humidity up."
+#    antecedent:
+#      variable: "precipitation"
+#      condition: "greater_than"
+#      threshold: 2.5
+#    consequent:
+#      variable: "relative_humidity"
+#      condition: "greater_than"
+#      threshold: 85.0
+#    confidence_weight: 0.90
+#    expected_lag_hours: 1.0
+#
+#  - rule_id: "RULE_013"
+#    name: "Evaporative Cooling Drop"
+#    description: "The onset of steady rain cools the surrounding air via evaporation, causing temperature to drop."
+#    antecedent:
+#      variable: "precipitation"
+#      condition: "greater_than"
+#      threshold: 5.0
+#    consequent:
+#      variable: "temperature_change_3h"
+#      condition: "less_than"
+#      threshold: -2.0
+#    confidence_weight: 0.65
+#    expected_lag_hours: 1.0
+#
+#  - rule_id: "RULE_014"
+#    name: "Heavy Rain Wind Gusts"
+#    description: "Heavy rain indicates convective activity, which is highly correlated with sudden wind gusts from downdrafts."
+#    antecedent:
+#      variable: "precipitation"
+#      condition: "greater_than"
+#      threshold: 10.0
+#    consequent:
+#      variable: "wind_gust"
+#      condition: "greater_than_or_equal"
+#      threshold: 15.0
+#    confidence_weight: 0.75
+#    expected_lag_hours: 0.5
 
   - rule_id: "RULE_015"
     name: "High Pressure Wind Suppression"

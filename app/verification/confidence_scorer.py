@@ -7,7 +7,7 @@ class ConfidenceScorer:
         self.config_path = config_path
         self.weights = {
             "data_fact": 0.35,
-            "met_rule": 0.25,
+            "met_rule": 0.10,
             "causal_graph": 0.20,
             "temporal_consistency": 0.20
         }
@@ -70,14 +70,19 @@ class ConfidenceScorer:
             "temporal_consistency": float(temporal_score)
         }
 
-        # 2. Compute Weighted Harmonic Mean
-        # If any individual component score is 0.0, the overall score is strictly 0.0
-        if any(s == 0.0 for s in scores.values()):
+        # 2. Compute overall score
+        # The rule engine is additive and excluded from the harmonic mean zeroing behavior.
+        # The other three components (data_fact, causal_graph, temporal_consistency) are evaluated via weighted harmonic mean.
+        non_rule_keys = ["data_fact", "causal_graph", "temporal_consistency"]
+        if any(scores[k] == 0.0 for k in non_rule_keys):
             overall_score = 0.0
         else:
-            w_sum = sum(self.weights[k] for k in scores)
-            w_denom = sum(self.weights[k] / scores[k] for k in scores)
-            overall_score = w_sum / w_denom if w_denom > 0 else 1.0
+            w_sum_non_rule = sum(self.weights[k] for k in non_rule_keys)
+            w_denom_non_rule = sum(self.weights[k] / scores[k] for k in non_rule_keys)
+            base_harmonic_score = w_sum_non_rule / w_denom_non_rule if w_denom_non_rule > 0 else 1.0
+            
+            w_rule = self.weights.get("met_rule", 0.10)
+            overall_score = (base_harmonic_score * w_sum_non_rule + scores["met_rule"] * w_rule) / (w_sum_non_rule + w_rule)
 
         # 3. Collect and Rank Failures/Contradictions by Severity
         failures = []

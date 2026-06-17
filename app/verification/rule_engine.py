@@ -75,6 +75,8 @@ class MeteorologicalRuleEngine:
             "temperature_change_6h": "temperature_change",
             "weather_category": "weather_category",
             "precipitation": "precipitation",
+            "precipitation_mm": "precipitation",
+            "precipitation_sum_mm": "precipitation",
             "wind_speed": "wind_speed",
             "visibility": "visibility",
             "wind_gust": "wind_gust",
@@ -109,6 +111,8 @@ class MeteorologicalRuleEngine:
             "temp_change": "temperature_change",
             "weather_category": "weather_category",
             "precipitation": "precipitation",
+            "precipitation_mm": "precipitation",
+            "precipitation_sum_mm": "precipitation",
             "wind_speed": "wind_speed",
             "visibility": "visibility",
             "wind_gust": "wind_gust",
@@ -273,6 +277,7 @@ class MeteorologicalRuleEngine:
             fired_via_claims = False
             claims_consequent_satisfied = True
             claims_violation_reasons = []
+            has_consequent_claims_in_window = False
             
             # Check if all antecedents are present in claims
             ant_claims_sets = []
@@ -324,6 +329,7 @@ class MeteorologicalRuleEngine:
                                     continue
                                     
                                 if target_start <= claim_start <= target_end:
+                                    has_consequent_claims_in_window = True
                                     if cons_dir == "neutral" or claim_dir == cons_dir:
                                         found_satisfied_consequent = True
                                     elif claim_dir != cons_dir:
@@ -412,14 +418,39 @@ class MeteorologicalRuleEngine:
             # Combine Firing and Satisfaction Status
             fired = fired_via_claims or fired_via_chain
             satisfied = True
-            
             reasons = []
-            if fired_via_claims and not claims_consequent_satisfied:
-                satisfied = False
-                reasons.extend(claims_violation_reasons)
-            if fired_via_chain and not chain_consequent_satisfied:
-                satisfied = False
-                reasons.extend(chain_violation_reasons)
+            
+            if fired_via_claims:
+                if claims_consequent_satisfied:
+                    # Satisfied via claims, done!
+                    satisfied = True
+                else:
+                    # Fired via claims but claims consequent was not satisfied.
+                    # Fall back to checking causal chain ONLY if NO consequent claims exist in the window.
+                    if not has_consequent_claims_in_window:
+                        if fired_via_chain:
+                            if chain_consequent_satisfied:
+                                satisfied = True
+                            else:
+                                satisfied = False
+                                reasons.extend(chain_violation_reasons)
+                        else:
+                            satisfied = False
+                            reasons.extend(claims_violation_reasons)
+                    else:
+                        # Consequent claims did exist but were contradicted or did not satisfy the condition.
+                        # Do not fall back to causal chain in this case.
+                        satisfied = False
+                        reasons.extend(claims_violation_reasons)
+            elif fired_via_chain:
+                # Fired via chain only (not via claims)
+                if chain_consequent_satisfied:
+                    satisfied = True
+                else:
+                    satisfied = False
+                    reasons.extend(chain_violation_reasons)
+            else:
+                satisfied = True
                 
             explanation = ""
             if fired:
