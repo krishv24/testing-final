@@ -5,8 +5,12 @@ import json
 from app.schemas import ContextPayload, ReportParams
 
 
+
 def meteorologist_prompt(ctx: ContextPayload) -> str:
     payload = ctx.model_dump(mode="json")
+    # Trim hourly to last 24 entries to save input tokens (aggregates cover the full period)
+    if "hourly" in payload and len(payload["hourly"]) > 24:
+        payload["hourly"] = payload["hourly"][-24:]
     mode_note = ctx.context_mode.name
     hourly_note = (
         "Full hourly series is included."
@@ -21,27 +25,27 @@ def meteorologist_prompt(ctx: ContextPayload) -> str:
     return f"""You are an expert meteorologist. You receive ONLY the structured JSON data below. Do not invent weather that is not supported by these tables.
 
 DATA (JSON):
-{json.dumps(payload, indent=2, default=str)}
+{json.dumps(payload, separators=(',', ':'), default=str)}
 
 CONTEXT MODE: {mode_note}. {hourly_note}
 REAL-TIME: {rt_note}
 
-You must output a single JSON object with exactly these keys:
-- "summary": string, several paragraphs. Describe weather dynamics across the full forecast horizon. Reference patterns from the daily table, the 6-hour table, and (if present) the hourly table. When `current_conditions` exists, relate it to the first hours of the forecast. Address short-term hourly dynamics, mesoscale 6-hour patterns, and daily persistent trends. Include causal reasoning (why conditions evolve, not only what they are). Keep the narrative internally consistent across time scales.
-- "proof": string, a compact bullet-style or short-paragraph block listing observable data signals that justify the summary (specific numbers, trends, durations). Cover where applicable: pressure tendencies, wind speed changes, wind direction shifts, daily temperature amplitude, precipitation duration and intensity, humidity trends. Every claim in summary must be traceable here.
-- "keywords": array of 3 to 5 short strings using controlled meteorological vocabulary (e.g. cooling trend, frontal passage, heavy rain, strong wind, unstable airmass, marine influence, overcast, light rain). Each keyword must correspond to at least one proof signal and at least one aggregate in the tables.
-- "warnings": optional string. Include ONLY if data show hazardous or clearly anomalous conditions versus climatology (e.g. sustained winds far above normals, rainfall far above typical daily totals, icing risk, flooding risk from extreme multi-day rain). Each warning must cite data. Omit this key entirely if conditions are not extreme.
+IMPORTANT: Keep your TOTAL response under 3000 tokens. Be concise.
 
-Rules:
-- Rely primarily on aggregate values; do not over-weight single-hour spikes unless they persist.
-- Separate daily trends from intraday variability when hourly data exist.
-- For longer lead times without hourly data, focus on daily and 6-hour aggregates.
-- Interpret sustained wind direction shifts as possible frontal or synoptic changes only when supported by temperature/humidity/precip patterns in the tables.
-- Compare temperature and precipitation to climatology where possible to flag anomalies.
-- Do not fabricate variables absent from the JSON (if pressure is missing, do not claim pressure values).
+Output a single JSON object with exactly these keys:
+- "summary": string, 1-2 short paragraphs MAX. Describe key weather dynamics concisely with causal reasoning. Reference aggregate data. Keep it internally consistent.
+- "proof": string, compact bullet list of key data signals (numbers, trends). Max 6-8 bullets.
+- "keywords": array of 3-5 short meteorological terms (e.g. "cooling trend", "heavy rain").
+- "warnings": optional string ONLY if hazardous conditions exist. Omit key if none.
+- "claims": array of MAX 8 claim objects. Only the most important directional/threshold statements. Each: {{"claim_id":"CLAIM_001","variable":"...","assertion_type":"...","window_start_utc":"...","window_end_utc":"...","threshold_or_delta":"> 25.0","data_scale":"hourly|six_hour|daily|climatology|current"}}. threshold_or_delta MUST be a single numeric value with operator; never a range.
+- "causal_chain": array of 4-8 strings ONLY from: pressure_drop, pressure_rise, stable_pressure, wind_increase, light_winds, wind_gusts, high_humidity, dry_air, rainfall, no_rain, warming, cooling, extreme_heat, low_visibility, fog_persistence, thunderstorm.
+- "reasoning_flags": array of strings (uncertainties/anomalies, or empty list).
+
+Rules: Use aggregates over single-hour spikes. Don't fabricate missing variables. Be concise.
 
 Respond with JSON only, no markdown fences.
 """
+
 
 
 def writer_prompt(meteorologist: dict, params: ReportParams, ctx: ContextPayload) -> str:

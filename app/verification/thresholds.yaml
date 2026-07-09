@@ -1,0 +1,62 @@
+# thresholds.yaml
+# Define numerical boundaries for weather verification system
+
+wind_speed_ms:
+  light:
+    min: 0.0
+    max: 3.4
+  moderate:
+    min: 3.4
+    max: 8.0
+  strong:
+    min: 8.0
+    max: 17.2
+  severe:
+    min: 17.2
+    max: 50.0
+
+precipitation_mm:
+  light:
+    min: 0.0
+    max: 2.5
+  moderate:
+    min: 2.5
+    max: 7.6
+  heavy:
+    min: 7.6
+    max: 50.0
+  extreme:
+    min: 50.0
+    max: 500.0
+
+temperature_change_c:
+  significant_drop: -4.0   # temperature change over 12-24 hours
+  significant_rise: 4.0    # temperature change over 12-24 hours
+
+temperature_absolute_c:
+  extreme_cold: 0.0        # absolute temperature threshold for cold warnings
+  extreme_heat: 35.0       # absolute temperature threshold for heat warnings
+
+humidity_percent:
+  dry:
+    min: 0.0
+    max: 30.0
+  comfortable:
+    min: 30.0
+    max: 60.0
+  humid:
+    min: 60.0
+    max: 85.0
+  saturated:
+    min: 85.0
+    max: 100.0
+
+pressure_change_6h_hpa:
+  slight:
+    min: 0.0
+    max: 1.5
+  moderate:
+    min: 1.5
+    max: 3.0
+  significant_drop: -3.0   # drop of 3 hPa or more in 6 hours
+  significant_rise: 3.0    # rise of 3 hPa or more in 6 hours

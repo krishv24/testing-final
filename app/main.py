@@ -202,6 +202,19 @@ async def post_report(req: ReportRequest) -> JSONResponse:
     )
 
 
+@app.get("/api/evaluation")
+async def get_evaluation() -> JSONResponse:
+    """Return aggregated evaluation metrics across all recorded pipeline runs."""
+    from app.verification.evaluator import EvaluationTracker
+    try:
+        tracker = EvaluationTracker()
+        summary = tracker.get_summary()
+        return JSONResponse(content=summary)
+    except Exception as e:
+        logger.exception("Evaluation summary failed: %s", str(e))
+        raise HTTPException(status_code=500, detail=f"Evaluation summary failed: {str(e)}") from e
+
+
 def main() -> None:
     import uvicorn
 

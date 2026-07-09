@@ -39,3 +39,4 @@ ENV/
 .idea/
 *.swp
 *.swo
+/myenv
