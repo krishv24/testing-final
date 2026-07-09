@@ -310,7 +310,7 @@ flowchart TB
 **Purpose**: Validates that the LLM's causal chain (e.g., `["pressure_drop", "wind_increase", "rainfall"]`) represents physically plausible transitions.
 
 **How it works**:
-1. Builds a directed graph (`networkx.DiGraph`) from the 16 rules + 14 system-injected links (e.g., `high_humidity → low_visibility`)
+1. Builds a directed graph (`networkx.DiGraph`) from the 16 rules + 12 system-injected links (e.g., `high_humidity → low_visibility`)
 2. Normalizes all node names via `_normalize_node()` (handles synonyms like `"clearing" → "no_rain"`, `"humidity_rise" → "high_humidity"`)
 3. For each adjacent pair in the causal chain:
    - **Forbidden edge check**: If the pair is in `invalid_edges` (e.g., `dry_air → rainfall`), it's flagged and the **entire causal score is zeroed**
@@ -422,7 +422,7 @@ The project uses a simple **file-based JSON cache** ([cache_store.py](file:///c:
 
 ```env
 GEMINI_API_KEY=your_key_here
-GEMINI_MODEL=gemini-3-flash-preview
+GEMINI_MODEL=gemini-2.5-flash-lite
 GEONAMES_USERNAME=your_username
 CDS_URL=                          # Optional, for ERA5 direct access
 CDS_KEY=                          # Optional
