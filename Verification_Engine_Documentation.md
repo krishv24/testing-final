@@ -201,7 +201,7 @@ While both components parse `met_rules.yaml` and model physical relationships, t
 | **Weights Role** | Component score is the weighted average of fired rules. | Edge confidence weights dictate cumulative path strength. |
 
 ---
-
+Summary Claims list Causal heavy_rain->humidiy
 ## §4. Data Fact Validator (`DataFactValidator`)
 
 * **File:** [app/verification/data_validator.py](file:///c:/Users/Krish Vinod/Hierarchical_ai_meteorologist_/app/verification/data_validator.py)
