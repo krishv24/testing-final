@@ -64,7 +64,51 @@ The verification lifecycle follows these steps within the function:
 
 ---
 
-## §1. Meteorological Rule Engine (`MeteorologicalRuleEngine`)
+## §1. Data Fact Validator (`DataFactValidator`)
+
+* **File:** [app/verification/data_validator.py](file:///c:/Users/Krish Vinod/Hierarchical_ai_meteorologist_/app/verification/data_validator.py)
+* **Class:** `DataFactValidator` (Lines 28–515)
+
+The Data Fact Validator compares claims extracted from the narrative text against factual tabular weather observations.
+
+### Claim Schema Validation
+Claims are validated against the `WeatherClaim` Pydantic model defined in [app/schemas.py](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/schemas.py#L116-L126):
+* `claim_id`: Unique identifier (e.g. `CLAIM_001`).
+* `variable`: Weather variable (e.g. `temperature`, `wind_speed`, `precipitation`).
+* `assertion_type`: Narrative assertion (e.g. `trend`, `threshold_exceeded`, `category_match`).
+* `window_start_utc` & `window_end_utc`: Time boundaries of the assertion.
+* `threshold_or_delta`: Expected numeric condition or category (e.g. `> 25.0`, `1.32 to 3.32`, `moderate`).
+* `data_scale`: Source scale (`hourly`, `six_hour`, `daily`, `current`, `climatology`).
+
+### Execution Steps in `validate_all_claims()`
+For each claim, the validator performs the following sequence:
+1. **Scale Routing (Lines 227–238):** Maps the claim's `data_scale` to the appropriate DataFrame (`hourly_df`, `six_hour_df`, `daily_df`, or `current_df`).
+2. **Time Window Filtering (Lines 240–277):** Converts timestamps to timezone-aware UTC and filters the routed DataFrame to the `[window_start_utc, window_end_utc]` range.
+3. **Column Map Resolving (Lines 279–291):** Maps user-friendly variable names to actual database columns depending on the scale:
+
+| Input Variable Name | Hourly Column Name | Daily / 6-Hour Column Name |
+| :--- | :--- | :--- |
+| `temperature` / `temp` | `t_c` | `t_mean_c` (mean), `t_min_c` (min), `t_max_c` (max) |
+| `apparent_temperature`| `t_feel_c` | `t_feel_c` |
+| `dew_point` / `dewpoint`| `td_c` | `td_mean_c` |
+| `relative_humidity` / `humidity` | `rh_percent` | `rh_mean_percent` |
+| `wind_speed` | `wind_speed_ms` | `wind_speed_mean_ms` |
+| `wind_gust` / `wind_gusts` | `wind_gust_ms` | `wind_speed_mean_ms` |
+| `precipitation` / `precipitation_mm` | `precipitation_mm` | `precipitation_sum_mm` |
+| `visibility` | `visibility_m` | `visibility_mean_m` |
+| `pressure` | `pressure_hpa` | `pressure_mean_hpa` |
+
+4. **DataType Checks (Lines 293–330):**
+   * Non-numeric columns (e.g. weather condition strings) use text parsing to check if the expected condition is a substring of the observed value.
+   * Numeric columns extract values and drop null entries.
+5. **Assertion Parsing & Evaluation (Lines 331–512):**
+   * **Trend Assertion (Lines 335–377):** Fits a linear regression slope over the sequence of observed data points and computes a monotonic step ratio ($\frac{\text{matching steps}}{\text{total steps}}$). To pass, the slope must match the direction and the monotonic step ratio must be $\ge 0.50$ (50%).
+   * **Category Match (Lines 379–460):** Resolves descriptive terms (e.g., `moderate wind`) to numeric ranges using `thresholds.yaml`. If the config defines a range (e.g., `min` and `max`), the claim passes if $\ge 50\%$ of the observations in the window fall within that range. If it represents a temperature drop/rise, it evaluates the change using a robust delta (mean of last third of values minus mean of first third of values).
+   * **Threshold Exceeded (Lines 462–512):** Parses operators (`>`, `>=`, `<`, `<=`, `==`, or ranges like `10 to 20`). The claim passes if the condition is satisfied in at least 25% of the observations in the time window.
+
+---
+
+## §2. Meteorological Rule Engine (`MeteorologicalRuleEngine`)
 
 * **File:** [app/verification/rule_engine.py](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/rule_engine.py)
 * **Class:** `MeteorologicalRuleEngine` (Lines 9–493)
@@ -129,7 +173,7 @@ If a rule fires via Path A but the consequent is missing from the claims list, t
 
 ---
 
-## §2. Causal Graph Engine (`CausalGraph`)
+## §3. Causal Graph Engine (`CausalGraph`)
 
 * **File:** [app/verification/causal_graph.py](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/causal_graph.py)
 * **Class:** `CausalGraph` (Lines 6–290)
@@ -183,7 +227,7 @@ The validation of a causal chain (e.g. `["pressure_drop", "wind_increase", "rain
 
 ---
 
-## §3. Comparison: Rule Engine vs Causal Graph
+## §4. Comparison: Rule Engine vs Causal Graph
 
 While both components parse `met_rules.yaml` and model physical relationships, they serve different validation goals and use distinct evaluation strategies:
 
@@ -199,50 +243,6 @@ While both components parse `met_rules.yaml` and model physical relationships, t
 | **Time Awareness** | Temporal overlap bounds, lag offset tolerance (`lag - 3h` to `+6h`). | Conceptual time step progression (sequential index checks). |
 | **Threshold Matching**| Numeric range comparison, 50% magnitude guard. | Mapped to categorical weather state nodes. |
 | **Weights Role** | Component score is the weighted average of fired rules. | Edge confidence weights dictate cumulative path strength. |
-
----
-Summary Claims list Causal heavy_rain->humidiy
-## §4. Data Fact Validator (`DataFactValidator`)
-
-* **File:** [app/verification/data_validator.py](file:///c:/Users/Krish Vinod/Hierarchical_ai_meteorologist_/app/verification/data_validator.py)
-* **Class:** `DataFactValidator` (Lines 28–515)
-
-The Data Fact Validator compares claims extracted from the narrative text against factual tabular weather observations.
-
-### Claim Schema Validation
-Claims are validated against the `WeatherClaim` Pydantic model defined in [app/schemas.py](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/schemas.py#L116-L126):
-* `claim_id`: Unique identifier (e.g. `CLAIM_001`).
-* `variable`: Weather variable (e.g. `temperature`, `wind_speed`, `precipitation`).
-* `assertion_type`: Narrative assertion (e.g. `trend`, `threshold_exceeded`, `category_match`).
-* `window_start_utc` & `window_end_utc`: Time boundaries of the assertion.
-* `threshold_or_delta`: Expected numeric condition or category (e.g. `> 25.0`, `1.32 to 3.32`, `moderate`).
-* `data_scale`: Source scale (`hourly`, `six_hour`, `daily`, `current`, `climatology`).
-
-### Execution Steps in `validate_all_claims()`
-For each claim, the validator performs the following sequence:
-1. **Scale Routing (Lines 227–238):** Maps the claim's `data_scale` to the appropriate DataFrame (`hourly_df`, `six_hour_df`, `daily_df`, or `current_df`).
-2. **Time Window Filtering (Lines 240–277):** Converts timestamps to timezone-aware UTC and filters the routed DataFrame to the `[window_start_utc, window_end_utc]` range.
-3. **Column Map Resolving (Lines 279–291):** Maps user-friendly variable names to actual database columns depending on the scale:
-
-| Input Variable Name | Hourly Column Name | Daily / 6-Hour Column Name |
-| :--- | :--- | :--- |
-| `temperature` / `temp` | `t_c` | `t_mean_c` (mean), `t_min_c` (min), `t_max_c` (max) |
-| `apparent_temperature`| `t_feel_c` | `t_feel_c` |
-| `dew_point` / `dewpoint`| `td_c` | `td_mean_c` |
-| `relative_humidity` / `humidity` | `rh_percent` | `rh_mean_percent` |
-| `wind_speed` | `wind_speed_ms` | `wind_speed_mean_ms` |
-| `wind_gust` / `wind_gusts` | `wind_gust_ms` | `wind_speed_mean_ms` |
-| `precipitation` / `precipitation_mm` | `precipitation_mm` | `precipitation_sum_mm` |
-| `visibility` | `visibility_m` | `visibility_mean_m` |
-| `pressure` | `pressure_hpa` | `pressure_mean_hpa` |
-
-4. **DataType Checks (Lines 293–330):**
-   * Non-numeric columns (e.g. weather condition strings) use text parsing to check if the expected condition is a substring of the observed value.
-   * Numeric columns extract values and drop null entries.
-5. **Assertion Parsing & Evaluation (Lines 331–512):**
-   * **Trend Assertion (Lines 335–377):** Fits a linear regression slope over the sequence of observed data points and computes a monotonic step ratio ($\frac{\text{matching steps}}{\text{total steps}}$). To pass, the slope must match the direction and the monotonic step ratio must be $\ge 0.50$ (50%).
-   * **Category Match (Lines 379–460):** Resolves descriptive terms (e.g., `moderate wind`) to numeric ranges using `thresholds.yaml`. If the config defines a range (e.g., `min` and `max`), the claim passes if $\ge 50\%$ of the observations in the window fall within that range. If it represents a temperature drop/rise, it evaluates the change using a robust delta (mean of last third of values minus mean of first third of values).
-   * **Threshold Exceeded (Lines 462–512):** Parses operators (`>`, `>=`, `<`, `<=`, `==`, or ranges like `10 to 20`). The claim passes if the condition is satisfied in at least 25% of the observations in the time window.
 
 ---
 
@@ -401,6 +401,9 @@ Use the following index to locate specific validation methods and interfaces in 
 
 | Component / Class | Method Name | Line Range | Purpose |
 | :--- | :--- | :--- | :--- |
+| **DataFactValidator** | `validate_all_claims(claims, ...)` | [L187 - L514](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/data_validator.py#L187-L514) | Routes and filters observations for claim verification. |
+| | `_get_column_name(variable, scale)` | [L46 - L93](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/data_validator.py#L46-L93) | Maps friendly variables to DataFrame columns. |
+| | `_lookup_threshold(var, val, assertion)`| [L95 - L142](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/data_validator.py#L95-L142)| Resolves text ranges from thresholds configuration. |
 | **MeteorologicalRuleEngine** | `__init__(rules_path)` | [L10 - L41](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/rule_engine.py#L10-L41) | Initializes synonym mapping and event configurations. |
 | | `_normalize_node(node)` | [L51 - L53](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/rule_engine.py#L51-L53) | Standardizes variable node names. |
 | | `_get_rule_var_direction(var, cond)` | [L55 - L85](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/rule_engine.py#L55-L85) | Maps rule operators to logical directions. |
@@ -412,9 +415,6 @@ Use the following index to locate specific validation methods and interfaces in 
 | | `_normalize_node(node)` | [L34 - L78](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/causal_graph.py#L34-L78) | Maps text snippets to weather nodes. |
 | | `_map_var_to_node(var, cond, val)` | [L80 - L119](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/causal_graph.py#L80-L119) | Maps YAML variables to node categories. |
 | | `validate_chain(causal_chain)` | [L190 - L289](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/causal_graph.py#L190-L289) | Verifies forbidden transitions and path confidence. |
-| **DataFactValidator** | `validate_all_claims(claims, ...)` | [L187 - L514](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/data_validator.py#L187-L514) | Routes and filters observations for claim verification. |
-| | `_get_column_name(variable, scale)` | [L46 - L93](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/data_validator.py#L46-L93) | Maps friendly variables to DataFrame columns. |
-| | `_lookup_threshold(var, val, assertion)`| [L95 - L142](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/data_validator.py#L95-L142)| Resolves text ranges from thresholds configuration. |
 | **TemporalConsistencyChecker**| `validate_temporal_consistency(claims)`| [L41 - L141](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/temporal_checker.py#L41-L141)| Runs cross-scale pairwise narrative checks. |
 | **ConfidenceScorer** | `compute_report(...)` | [L28 - L183](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/confidence_scorer.py#L28-L183) | Computes overall harmonic score and sorts failures. |
 | **EvaluationTracker** | `_compute_metrics(...)` | [L34 - L131](file:///c:/Users/Krish%20Vinod/Hierarchical_ai_meteorologist_/app/verification/evaluator.py#L34-L131) | Calculates the six precision/recall precision metrics. |
