@@ -13,9 +13,30 @@ from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_RETRIES = 1
-BASE_DELAY = 0.75
-MAX_DELAY = 20.0
+# Retry config — generous retries for transient 503/429 demand spikes
+DEFAULT_RETRIES = 5
+BASE_DELAY = 2.0   # seconds before first retry
+MAX_DELAY = 60.0   # cap per-retry wait
+
+
+def _is_transient_error(exc: Exception) -> bool:
+    """Return True for errors that are safe to retry (503, 429, connection issues)."""
+    msg = str(exc).lower()
+    transient_markers = [
+        "503",
+        "unavailable",
+        "429",
+        "resource exhausted",
+        "rate limit",
+        "quota",
+        "too many requests",
+        "service unavailable",
+        "temporarily unavailable",
+        "high demand",
+        "connection",
+        "timeout",
+    ]
+    return any(m in msg for m in transient_markers)
 
 # ── Global call counter so we can see exactly how many API hits happen ──
 _CALL_COUNT = 0
@@ -90,17 +111,29 @@ async def generate_json_text(prompt: str, *, temperature: float = 0.35) -> str:
         except Exception as e:
             elapsed = time.perf_counter() - t0
             last_exc = e
+            is_transient = _is_transient_error(e)
             logger.error(
-                "  ✗ Call #%d FAILED attempt %d/%d in %.2fs | error_type=%s | error=%s",
-                call_id, attempt + 1, DEFAULT_RETRIES, elapsed, type(e).__name__, str(e)[:300],
+                "  ✗ Call #%d FAILED attempt %d/%d in %.2fs | transient=%s | error_type=%s | error=%s",
+                call_id, attempt + 1, DEFAULT_RETRIES, elapsed, is_transient, type(e).__name__, str(e)[:300],
             )
+            # For non-transient errors (bad auth, bad request, etc.), fail immediately.
+            if not is_transient:
+                logger.error("  ✗ Call #%d non-transient error — aborting retries.", call_id)
+                break
             if attempt == DEFAULT_RETRIES - 1:
                 break
-            delay = min(MAX_DELAY, BASE_DELAY * (2**attempt))
-            logger.warning("  … Call #%d retrying in %.2fs", call_id, delay)
+            # Exponential backoff: 2s, 4s, 8s, 16s, capped at MAX_DELAY
+            delay = min(MAX_DELAY, BASE_DELAY * (2 ** attempt))
+            logger.warning(
+                "  … Call #%d got transient error (503/429). Retrying in %.1fs (attempt %d/%d)...",
+                call_id, delay, attempt + 2, DEFAULT_RETRIES,
+            )
             await asyncio.sleep(delay)
 
-    logger.error("═══ GEMINI CALL #%d FINAL FAILURE ═══ caller=%s | all %d attempts exhausted", call_id, caller, DEFAULT_RETRIES)
+    logger.error(
+        "═══ GEMINI CALL #%d FINAL FAILURE ═══ caller=%s | all %d attempts exhausted",
+        call_id, caller, DEFAULT_RETRIES,
+    )
     assert last_exc is not None
     raise last_exc
 
