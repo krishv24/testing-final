@@ -185,13 +185,13 @@ def print_summary(summary: dict) -> None:
         return
 
     # Runner contributions
-    print("  -- Runs per team member ──")
+    print("  -- Runs per team member --")
     for runner, count in summary.get("runs_per_runner", {}).items():
         print(f"    {runner}: {count}")
     print()
 
-    # Key metrics
-    print("  -- Key Metrics (averages) ──")
+    # Key Metrics
+    print("  -- Key Metrics (averages) --")
     print(f"    Overall Score:            {summary['avg_overall_score']:.4f}")
     print(f"    Fact Validation Score:    {summary['avg_fact_score']:.4f}")
     print(f"    Rule Consistency Score:   {summary['avg_rule_score']:.4f}")
@@ -209,26 +209,26 @@ def print_summary(summary: dict) -> None:
     print()
 
     # By tone
-    print("  -- By Tone ──")
+    print("  -- By Tone --")
     for tone, data in summary.get("by_tone", {}).items():
         print(f"    {tone:20s}  n={data['count']:3d}  avg_score={data['avg_score']:.4f}")
     print()
 
     # By domain
-    print("  -- By Domain ──")
+    print("  -- By Domain --")
     for dom, data in summary.get("by_domain", {}).items():
         print(f"    {dom:20s}  n={data['count']:3d}  avg_score={data['avg_score']:.4f}")
     print()
 
     # By climate zone (top 10 by count)
-    print("  -- By Climate Zone (top 10) ──")
+    print("  -- By Climate Zone (top 10) --")
     climate = summary.get("by_climate_zone", {})
     sorted_climate = sorted(climate.items(), key=lambda x: x[1]["count"], reverse=True)
     for cz, data in sorted_climate[:10]:
         print(
             f"    {cz:35s}  n={data['count']:3d}  "
             f"avg={data['avg_score']:.3f}  "
-            f"[{data['min_score']:.3f} – {data['max_score']:.3f}]"
+            f"[{data['min_score']:.3f} - {data['max_score']:.3f}]"
         )
     print()
     print("=" * 65)
@@ -286,17 +286,17 @@ def main():
 
     # Export CSV
     csv_path = export_csv(runs, output_dir)
-    print(f"✓ CSV exported to {csv_path}")
+    print(f"[OK] CSV exported to {csv_path}")
 
     # Export full JSON
     json_path = export_full_json(runs, output_dir)
-    print(f"✓ Full JSON exported to {json_path}")
+    print(f"[OK] Full JSON exported to {json_path}")
 
     # Export summary
     summary = compute_summary(runs)
     summary_path = output_dir / "experiment_summary.json"
     summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    print(f"✓ Summary exported to {summary_path}")
+    print(f"[OK] Summary exported to {summary_path}")
 
     # Print to console
     print_summary(summary)
