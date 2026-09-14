@@ -1,0 +1,43 @@
+name: Run Batch Experiments
+
+on:
+  # Run every 6 hours automatically
+  schedule:
+    - cron: '0 */6 * * *'
+  # Manual trigger from GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Max experiments per run'
+        required: false
+        default: '15'
+
+jobs:
+  batch-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run batch experiments
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEONAMES_USERNAME: ${{ secrets.GEONAMES_USERNAME }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          RUNNER_NAME: github-actions-krish
+        run: |
+          python batch_runner.py \
+            --limit ${{ github.event.inputs.limit || '15' }} \
+            --delay 8
