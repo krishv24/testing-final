@@ -40,3 +40,7 @@ ENV/
 *.swp
 *.swo
 /myenv
+
+# Experiment outputs
+results/
+experiment_log/
