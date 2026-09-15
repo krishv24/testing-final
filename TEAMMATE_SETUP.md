@@ -1,6 +1,6 @@
 # Teammate Setup Guide — IEEE Experiment Runner
 
-This guide is for all team members (other than Krish) who want to
+This guide is for all team members who want to
 contribute runs to the shared experiment database.
 
 ---
@@ -8,7 +8,6 @@ contribute runs to the shared experiment database.
 ## What you need
 
 - Your own **Gemini API key** (free at https://aistudio.google.com/apikey)
-- The **Supabase credentials** (ask Krish — these are shared for the whole team)
 - Python 3.10+ installed
 - The project code (cloned from GitHub)
 
@@ -58,9 +57,9 @@ GEONAMES_USERNAME=demo
 GEMINI_API_KEY=your-key-here
 GEMINI_MODEL=gemini-2.5-flash-lite
 
-# Supabase shared DB — ask Krish for these values
+# Supabase shared DB 
 SUPABASE_URL=https://fgidyrkhzdiqvlffdnbn.supabase.co
-SUPABASE_KEY=<ask Krish>
+SUPABASE_KEY=key
 
 # YOUR name — this is how we track who ran what
 RUNNER_NAME=yourname
