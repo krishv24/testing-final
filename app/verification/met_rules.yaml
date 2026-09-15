@@ -55,7 +55,7 @@ rules:
       variable: "precipitation"
       condition: "greater_than_or_equal"
       threshold: 7.6
-    confidence_weight: 0.0
+    confidence_weight: 0.80
     expected_lag_hours: 0.0
 
   - rule_id: "RULE_005"
