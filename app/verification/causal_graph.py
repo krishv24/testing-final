@@ -198,6 +198,24 @@ class CausalGraph:
         self.graph.add_edge("thunderstorm", "cooling", confidence=0.80, lag=0.5, rule_id="SYS_LINK_020")    # Convective downdraft cold pools (Markowski & Richardson, Mesoscale Met.)
         self.graph.add_edge("wind_increase", "rainfall", confidence=0.70, lag=2.0, rule_id="SYS_LINK_021")  # Enhanced low-level wind → moisture transport + convergence → forced ascent
 
+        # Fair-weather / high-pressure stability patterns
+        self.graph.add_edge("no_rain", "stable_pressure", confidence=0.70, lag=0.0, rule_id="SYS_LINK_022")   # Persistent dry conditions ↔ anticyclonic stability
+        self.graph.add_edge("pressure_rise", "stable_pressure", confidence=0.75, lag=6.0, rule_id="SYS_LINK_023")  # Post-frontal pressure rise settles into stable ridge
+        self.graph.add_edge("stable_pressure", "no_rain", confidence=0.70, lag=0.0, rule_id="SYS_LINK_024")   # Anticyclonic subsidence suppresses convection
+        self.graph.add_edge("no_rain", "dry_air", confidence=0.70, lag=2.0, rule_id="SYS_LINK_025")           # Prolonged dry spell → boundary layer dries out
+        self.graph.add_edge("pressure_rise", "no_rain", confidence=0.70, lag=3.0, rule_id="SYS_LINK_026")     # Post-frontal subsidence clears precip
+
+        # Cooling / fog patterns (frequently seen in Delhi / continental climates)
+        self.graph.add_edge("cooling", "low_visibility", confidence=0.75, lag=3.0, rule_id="SYS_LINK_027")    # Radiational cooling → dew point convergence → fog/mist
+        self.graph.add_edge("cooling", "fog_persistence", confidence=0.70, lag=4.0, rule_id="SYS_LINK_028")   # Sustained cooling maintains saturation → persistent fog
+        self.graph.add_edge("light_winds", "low_visibility", confidence=0.70, lag=2.0, rule_id="SYS_LINK_029")  # Calm winds prevent turbulent mixing → fog/haze
+        self.graph.add_edge("light_winds", "fog_persistence", confidence=0.65, lag=3.0, rule_id="SYS_LINK_030")  # Light winds can't break fog layer
+
+        # Warming / drying and pressure-wind relationships
+        self.graph.add_edge("warming", "no_rain", confidence=0.65, lag=1.0, rule_id="SYS_LINK_031")           # Diurnal warming raises LCL → suppresses shallow convection
+        self.graph.add_edge("pressure_drop", "wind_increase", confidence=0.80, lag=1.0, rule_id="SYS_LINK_032")  # Steepening pressure gradient → stronger geostrophic wind
+        self.graph.add_edge("pressure_rise", "light_winds", confidence=0.70, lag=2.0, rule_id="SYS_LINK_033")   # Relaxing gradient under ridge → wind dies down
+
     def validate_chain(self, causal_chain: List[str]) -> Dict[str, Any]:
         """
         Validates the causal chain of weather events.
