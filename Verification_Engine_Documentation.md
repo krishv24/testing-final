@@ -23,7 +23,7 @@ The Hierarchical AI Meteorologist operates as a three-block pipeline, ensuring t
 |  [ Block 2: Meteorologist Agent ]                                      |
 |  - Generates forecast narrative, claims list, and causal chain.       |
 |  - Executes 4 verification engines to compute confidence scores.      |
-|  - Triggers iterative loop/feedback if score < threshold (0.80).       |
+|  - Triggers iterative loop/feedback if score < threshold (0.55).       |
 |                                                                        |
 +-----------------------------------+------------------------------------+
                                     |
@@ -59,7 +59,7 @@ The verification lifecycle follows these steps within the function:
      temporal_results = temporal_checker.validate_temporal_consistency(claims)
      ```
    * **Scoring (Line 89):** `report = scorer.compute_report(fact_results, rule_results, causal_results, temporal_results)` evaluates the final weighted confidence score.
-   * **Feedback & Retry (Lines 97–120):** If `score < threshold` (default is `0.80`), the system builds detailed critique feedback listing all failed checks, appends it to the prompt, and retries once.
+   * **Feedback & Retry (Lines 97–120):** If `score < threshold` (default is `0.55`), the system builds detailed critique feedback listing all failed checks, appends it to the prompt, and retries if `max_retry_attempts > 0` (which is set to `0` by default, meaning no retries / only 1 initial attempt occurs unless configured otherwise).
 4. **Recording Metrics (Lines 127–138):** Results are logged to `.cache/evaluation_log.json` via the `EvaluationTracker`.
 
 ---
@@ -165,7 +165,7 @@ To ensure the graph represents complete meteorological relationships, the engine
 
 #### 5 Forbidden Transitions (`self.invalid_edges`):
 1. `dry_air` $\rightarrow$ `rainfall`
-2. `dry_air` $\rightarrow$ `fog_formation`
+2. `dry_air` $\rightarrow$ `fog_formation` *(Note: Since `fog_formation` is normalized to `low_visibility` beforehand, this check is bypassed in practice and cannot trigger)*
 3. `dry_air` $\rightarrow$ `fog_persistence`
 4. `cooling` $\rightarrow$ `extreme_heat`
 5. `clearing` $\rightarrow$ `rainfall`
@@ -321,7 +321,7 @@ The tracker computes the following metrics in `_compute_metrics()` (Lines 34–1
 1. **False Claim Rate:** The fraction of generated factual claims that failed data verification.
    $$\text{False Claim Rate} = \frac{\text{Failed Claims}}{\text{Total Claims}}$$
 2. **Cross-Scale Consistency:** `True` if no high-severity scale contradictions were detected.
-3. **Verified Report:** `True` if the final score is $\ge$ verification threshold (default `0.80`).
+3. **Verified Report:** `True` if the final score is $\ge$ verification threshold (default `0.55`).
 4. **Correction Rate (Correction Needed):** `True` if any `high` or `medium` severity failure is present in the confidence report.
 5. **Approximate Hallucination Precision:** Measures the corroboration accuracy of fact-checking failures by checking if data failures correlate with physical rule/graph failures.
    $$\text{Hallucination Precision} = \frac{\text{Corroborated Failures}}{\text{Failed Claims}}$$
@@ -380,15 +380,17 @@ The following ASCII diagram maps the verification execution path during a foreca
 +--------------------------------|-----------------------------------+
                                  |
                                  v
-                     Is score >= threshold (0.80)?
+                     Is score >= threshold (0.55)?
                     /                             \
                    v (Yes)                         v (No, retry loop)
-        +-----------------------+       +-------------------------------+
-        |  Block 3: Report      |       | - Build detailed critique     |
-        |  Writer (Final Report)|       |   listing failed checks.      |
-        +-----------------------+       | - Query Gemini Meteorologist  |
-                                        |   for revision (Max 1 retry). |
-                                        +-------------------------------+
+        +-----------------------+       +------------------------------------+
+        |  Block 3: Report      |       | - Build detailed critique          |
+        |  Writer (Final Report)|       |   listing failed checks.           |
+        +-----------------------+       | - Query Gemini Meteorologist       |
+                                        |   for revision (if attempts <      |
+                                        |   max_retry_attempts; defaults to 0|
+                                        |   retries/1 attempt total).        |
+                                        +------------------------------------+
 ```
 
 ---

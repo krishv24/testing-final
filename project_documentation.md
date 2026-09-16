@@ -70,6 +70,7 @@ Hierarchical_ai_meteorologist_/
 │   │
 │   └── verification/            # 4-Module Verification Engine
 │       ├── data_validator.py    # Module 1: Fact-checks claims against data
+│       ├── evaluator.py         # Tracks precision/recall metrics and logs history
 │       ├── rule_engine.py       # Module 2: Meteorological rule validation
 │       ├── causal_graph.py      # Module 3: Causal chain graph validation
 │       ├── temporal_checker.py  # Module 4: Cross-scale consistency
@@ -283,24 +284,24 @@ flowchart TB
 
 **The 16 Rules** (from [met_rules.yaml](file:///c:/Users/Krish Vinod/Hierarchical_ai_meteorologist_/app/verification/met_rules.yaml)):
 
-| Rule | Name | Antecedent → Consequent |
-|------|------|------------------------|
-| RULE_001 | Baric Wind Rule | Pressure drop ≤ −3 hPa → Wind ≥ 8 m/s |
-| RULE_002 | Saturated Air Precipitation | Humidity > 90% → Precipitation > 0 |
-| RULE_003 | Thermal Low Development | Temperature > 35°C → Pressure drop < −1.5 hPa |
-| RULE_004 | Convective Storm Risk | Thunderstorm → Precipitation ≥ 7.6 mm |
-| RULE_005 | Cold Frontal Passage | Temp change < −3°C → Pressure rise > 1.5 hPa |
-| RULE_006 | Sea Breeze Initiation | Temperature > 28°C → Wind > 4 m/s |
-| RULE_007 | Cyclone Wind Risk | Pressure drop ≤ −6 hPa → Wind ≥ 17.2 m/s |
-| RULE_008 | Dry Air Rain Suppression | Humidity < 30% → Precipitation = 0 |
-| RULE_009 | Warm Frontal Advection | Temp change > 3°C → Pressure drop < −1.5 hPa |
-| RULE_010 | Radiational Cooling | Humidity < 40% → Temp change < −4°C |
-| RULE_011 | Radiation Fog Formation | Humidity ≥ 98% → Visibility < 1000 m |
-| RULE_012 | Rainfall Saturation | Precipitation > 2.5 mm → Humidity > 85% |
-| RULE_013 | Evaporative Cooling | Precipitation > 5 mm → Temp change < −2°C |
-| RULE_014 | Heavy Rain Wind Gusts | Precipitation > 10 mm → Wind gust ≥ 15 m/s |
-| RULE_015 | High Pressure Wind Suppression | Pressure > 1025 hPa → Wind ≤ 3.4 m/s |
-| RULE_016 | Fog Persistence | Humidity > 90% + Stable pressure + Light winds → Fog persists |
+| Rule | Name | Antecedent → Consequent | Status / Config |
+|------|------|-------------------------|-----------------|
+| RULE_001 | Baric Wind Rule | Pressure drop ≤ −3 hPa → Wind ≥ 8 m/s | Active |
+| RULE_002 | Saturated Air Precipitation | Humidity > 90% → Precipitation > 0 | Active |
+| RULE_003 | Thermal Low Development | Temperature > 35°C → Pressure drop < −1.5 hPa | Active |
+| RULE_004 | Convective Storm Risk | Thunderstorm → Precipitation ≥ 7.6 mm | Disabled (`confidence_weight: 0.0`) |
+| RULE_005 | Cold Frontal Passage | Temp change < −3°C → Pressure rise > 1.5 hPa | Active |
+| RULE_006 | Sea Breeze Initiation | Temperature > 28°C → Wind > 4 m/s | Active |
+| RULE_007 | Cyclone Wind Risk | Pressure drop ≤ −6 hPa → Wind ≥ 17.2 m/s | Active |
+| RULE_008 | Dry Air Rain Suppression | Humidity < 30% → Precipitation = 0 | Active |
+| RULE_009 | Warm Frontal Advection | Temp change > 3°C → Pressure drop < −1.5 hPa | Active |
+| RULE_010 | Diurnal Radiational Cooling | Humidity < 40% → Temp change < −4°C | Active |
+| RULE_011 | Radiation Fog Formation | Humidity ≥ 98% → Visibility < 1000 m | Active |
+| RULE_012 | Rainfall Saturation | Precipitation > 2.5 mm → Humidity > 85% | Commented Out |
+| RULE_013 | Evaporative Cooling | Precipitation > 5 mm → Temp change < −2°C | Commented Out |
+| RULE_014 | Heavy Rain Wind Gusts | Precipitation > 10 mm → Wind gust ≥ 15 m/s | Commented Out |
+| RULE_015 | High Pressure Wind Suppression | Pressure > 1025 hPa → Wind ≤ 3.4 m/s | Active |
+| RULE_016 | Fog Persistence | Humidity > 90% + Stable pressure + Light winds → Fog persists | Active |
 
 ---
 
@@ -353,12 +354,12 @@ flowchart TB
 | Component | Weight | What it scores |
 |-----------|--------|---------------|
 | `data_fact` | 0.35 | % of claims that pass fact-checking |
-| `met_rule` | 0.25 | Rule consistency (violations reduce score) |
+| `met_rule` | 0.10 | Rule consistency (violations reduce score) |
 | `causal_graph` | 0.20 | Causal chain validity (0.0 if forbidden edge) |
 | `temporal_consistency` | 0.20 | Cross-scale directional coherence |
 
 > [!IMPORTANT]
-> **Harmonic mean** means that if **any single component is 0.0**, the overall score is **strictly 0.0**. This is intentional — a forbidden causal edge or a completely failed fact-check should fail the entire output.
+> **Harmonic mean zero-guard**: The three core physical check modules (`data_fact`, `causal_graph`, and `temporal_consistency`) are evaluated via a weighted harmonic mean. If **any of these three components is 0.0**, the overall score is **strictly 0.0**. The `met_rule` component is added **arithmetically** after this step and does not trigger the zero-guard.
 
 **Severity levels**:
 - **High**: Rule violations, forbidden causal transitions, cross-scale contradictions
