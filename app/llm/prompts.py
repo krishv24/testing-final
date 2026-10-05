@@ -17,11 +17,38 @@ def meteorologist_prompt(ctx: ContextPayload) -> str:
         if ctx.context_mode.hierarchical_include_hourly and ctx.hourly
         else "Hourly series omitted (lead time ≥ 7 days or token savings); rely on 6-hour and daily aggregates only."
     )
+    clim_note = ""
+    if ctx.climatology and ctx.climatology.monthly:
+        months_in_forecast = sorted(list({
+            int(d.date_utc.split("-")[1])
+            for d in ctx.daily_aggregates
+            if d.date_utc and "-" in d.date_utc
+        })) if ctx.daily_aggregates else []
+        if not months_in_forecast and ctx.current_conditions:
+            try:
+                months_in_forecast = [int(ctx.current_conditions.timestamp_utc.split("-")[1])]
+            except Exception:
+                pass
+        
+        clim_lines = []
+        for m in (months_in_forecast or [1]):
+            row = next((r for r in ctx.climatology.monthly if r.month == m), None)
+            if row and row.tmax_c is not None and row.tmin_c is not None:
+                clim_lines.append(f"Month {m}: Normal High={row.tmax_c:.1f}°C, Normal Low={row.tmin_c:.1f}°C")
+        if clim_lines:
+            clim_note = (
+                "CLIMATOLOGICAL NORMALS: " + "; ".join(clim_lines) + ". "
+                "ANOMALY RULE: Compare forecast temperatures directly to these historical normals. "
+                "Do NOT assert 'warm anomaly' unless forecast highs exceed the normal high by at least +2.0°C. "
+                "Do NOT assert 'cold anomaly' unless forecast lows fall below the normal low by at least -2.0°C."
+            )
+
     rt_note = (
         "The field `current_conditions` (when present) is the latest near-real-time snapshot from the provider at `timestamp_utc` — anchor the present/now state to it before discussing forecast evolution."
         if ctx.current_conditions
         else "No separate current snapshot was provided; infer present conditions only from hourly/aggregates."
     )
+
     return f"""You are an expert meteorologist. You receive ONLY the structured JSON data below. Do not invent weather that is not supported by these tables.
 
 DATA (JSON):
@@ -29,6 +56,7 @@ DATA (JSON):
 
 CONTEXT MODE: {mode_note}. {hourly_note}
 REAL-TIME: {rt_note}
+{clim_note}
 
 IMPORTANT: Keep your TOTAL response under 3000 tokens. Be concise.
 

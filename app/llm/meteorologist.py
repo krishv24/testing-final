@@ -42,6 +42,7 @@ async def run_meteorologist(ctx: ContextPayload, *, use_cache: bool = True) -> t
     six_hour_df = pd.DataFrame([r.model_dump(mode="json") for r in ctx.six_hour_aggregates]) if ctx.six_hour_aggregates else pd.DataFrame()
     daily_df = pd.DataFrame([r.model_dump(mode="json") for r in ctx.daily_aggregates]) if ctx.daily_aggregates else pd.DataFrame()
     current_df = pd.DataFrame([ctx.current_conditions.model_dump(mode="json")]) if ctx.current_conditions else pd.DataFrame()
+    clim_df = pd.DataFrame([r.model_dump(mode="json") for r in ctx.climatology.monthly]) if (ctx.climatology and ctx.climatology.monthly) else pd.DataFrame()
 
     # Paths to validator configurations
     verify_dir = pathlib.Path(__file__).parent.parent / "verification"
@@ -80,7 +81,7 @@ async def run_meteorologist(ctx: ContextPayload, *, use_cache: bool = True) -> t
         claims = data.get("claims", [])
         causal_chain = data.get("causal_chain", [])
 
-        fact_results = fact_validator.validate_all_claims(claims, hourly_df, six_hour_df, daily_df, current_df)
+        fact_results = fact_validator.validate_all_claims(claims, hourly_df, six_hour_df, daily_df, current_df, climatology_df=clim_df)
         rule_results = rule_engine.validate_rules(claims, causal_chain)
         causal_results = causal_graph.validate_chain(causal_chain)
         temporal_results = temporal_checker.validate_temporal_consistency(claims)

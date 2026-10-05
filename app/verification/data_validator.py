@@ -80,6 +80,23 @@ class DataFactValidator:
                 "pressure_mean_hpa": "pressure_hpa",
             }
             return mapping.get(v, v)
+        elif scale == "climatology":
+            mapping = {
+                "temperature": "tmax_c",
+                "temp": "tmax_c",
+                "t_max": "tmax_c",
+                "t_max_c": "tmax_c",
+                "tmax_c": "tmax_c",
+                "t_min": "tmin_c",
+                "t_min_c": "tmin_c",
+                "tmin_c": "tmin_c",
+                "precipitation": "ptot_mm",
+                "precipitation_mm": "ptot_mm",
+                "precipitation_sum": "ptot_mm",
+                "precipitation_sum_mm": "ptot_mm",
+                "ptot_mm": "ptot_mm",
+            }
+            return mapping.get(v, v)
         else: # six_hour or daily
             mapping = {
                 "temperature": "t_mean_c",
@@ -219,7 +236,8 @@ class DataFactValidator:
         hourly_df: pd.DataFrame,
         six_hour_df: pd.DataFrame,
         daily_df: pd.DataFrame,
-        current_df: pd.DataFrame = None
+        current_df: pd.DataFrame = None,
+        climatology_df: pd.DataFrame = None
     ) -> List[ValidationResult]:
         """
         Validates all meteorological claims against factual data sources.
@@ -230,6 +248,7 @@ class DataFactValidator:
             six_hour_df: DataFrame of 6-hour weather aggregates.
             daily_df: DataFrame of daily aggregates.
             current_df: DataFrame of current observation snapshot.
+            climatology_df: DataFrame of monthly climatological normals.
             
         Returns:
             List of ValidationResult objects.
@@ -240,7 +259,7 @@ class DataFactValidator:
             "current": current_df if current_df is not None else hourly_df,
             "six_hour": six_hour_df,
             "daily": daily_df,
-            "climatology": daily_df
+            "climatology": climatology_df if (climatology_df is not None and not climatology_df.empty) else daily_df
         }
 
         for claim in claims:
@@ -252,6 +271,73 @@ class DataFactValidator:
             end_str = getattr(claim, "window_end_utc", None) or claim.get("window_end_utc", "")
             threshold_or_delta = getattr(claim, "threshold_or_delta", None) or claim.get("threshold_or_delta", "")
             scale = getattr(claim, "source_scale", None) or getattr(claim, "data_scale", None) or claim.get("source_scale") or claim.get("data_scale", "hourly")
+
+            # --- Dynamic Climatological Anomaly Verification ---
+            assertion_lower = str(assertion_type).lower().strip()
+            thresh_str_lower = str(threshold_or_delta).lower().strip()
+            is_anomaly_claim = (
+                "anomaly" in assertion_lower
+                or "anomaly" in thresh_str_lower
+                or "heatwave" in assertion_lower
+                or "heatwave" in thresh_str_lower
+            )
+            if is_anomaly_claim and climatology_df is not None and not climatology_df.empty and not daily_df.empty:
+                month = None
+                try:
+                    dt = pd.to_datetime(start_str)
+                    month = dt.month
+                except Exception:
+                    pass
+                if not month and "date_utc" in daily_df.columns:
+                    try:
+                        month = pd.to_datetime(daily_df["date_utc"].dropna().iloc[0]).month
+                    except Exception:
+                        pass
+
+                if month and "month" in climatology_df.columns:
+                    c_rows = climatology_df[climatology_df["month"] == month]
+                    if not c_rows.empty:
+                        c_tmax = c_rows.iloc[0].get("tmax_c")
+                        c_tmin = c_rows.iloc[0].get("tmin_c")
+                        fc_max = daily_df["t_max_c"].max() if "t_max_c" in daily_df.columns else None
+                        fc_min = daily_df["t_min_c"].min() if "t_min_c" in daily_df.columns else None
+
+                        clim_cfg = self.thresholds.get("climatological_anomaly", {})
+                        warm_delta = float(clim_cfg.get("warm_anomaly_delta_c", 2.0))
+                        cold_delta = float(clim_cfg.get("cold_anomaly_delta_c", -2.0))
+
+                        if "warm" in assertion_lower or "warm" in thresh_str_lower or "heat" in assertion_lower:
+                            if fc_max is not None and c_tmax is not None and not pd.isna(c_tmax):
+                                diff = float(fc_max - c_tmax)
+                                is_pass = diff >= warm_delta
+                                results.append(ValidationResult(
+                                    claim_id=claim_id,
+                                    is_pass=is_pass,
+                                    confidence_score=1.0 if is_pass else 0.0,
+                                    observed_value=f"Forecast High {fc_max:.1f}°C (Delta: {diff:+.1f}°C)",
+                                    expected_value=f">= {c_tmax + warm_delta:.1f}°C (+{warm_delta}°C above normal)",
+                                    reason=(
+                                        f"Warm anomaly verification: forecast max is {fc_max:.1f}°C, "
+                                        f"historical normal max is {c_tmax:.1f}°C (diff: {diff:+.1f}°C, required: >={warm_delta:+.1f}°C)."
+                                    )
+                                ))
+                                continue
+                        elif "cold" in assertion_lower or "cold" in thresh_str_lower:
+                            if fc_min is not None and c_tmin is not None and not pd.isna(c_tmin):
+                                diff = float(fc_min - c_tmin)
+                                is_pass = diff <= cold_delta
+                                results.append(ValidationResult(
+                                    claim_id=claim_id,
+                                    is_pass=is_pass,
+                                    confidence_score=1.0 if is_pass else 0.0,
+                                    observed_value=f"Forecast Low {fc_min:.1f}°C (Delta: {diff:+.1f}°C)",
+                                    expected_value=f"<= {c_tmin + cold_delta:.1f}°C ({cold_delta}°C below normal)",
+                                    reason=(
+                                        f"Cold anomaly verification: forecast min is {fc_min:.1f}°C, "
+                                        f"historical normal min is {c_tmin:.1f}°C (diff: {diff:+.1f}°C, required: <={cold_delta:+.1f}°C)."
+                                    )
+                                ))
+                                continue
 
             scale_lower = str(scale).lower().strip()
             df = df_map.get(scale_lower)
@@ -273,8 +359,8 @@ class DataFactValidator:
                     ts_col = col
                     break
             
-            # Bypass time window filtering for "current" scale since it's a single snapshot
-            if ts_col and scale_lower != "current":
+            # Bypass time window filtering for "current" and "climatology" scales
+            if ts_col and scale_lower not in ["current", "climatology"]:
                 try:
                     df_dates = self._normalize_to_utc(df[ts_col])
                     start_dt = self._normalize_to_utc(start_str)

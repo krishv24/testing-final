@@ -60,3 +60,10 @@ pressure_change_6h_hpa:
     max: 3.0
   significant_drop: -3.0   # drop of 3 hPa or more in 6 hours
   significant_rise: 3.0    # rise of 3 hPa or more in 6 hours
+
+climatological_anomaly:
+  warm_anomaly_delta_c: 2.0      # Forecast max must exceed monthly normal max by >= 2.0°C
+  cold_anomaly_delta_c: -2.0     # Forecast min must be below monthly normal min by <= -2.0°C
+  extreme_heat_delta_c: 4.0      # Severe anomaly (Heatwave)
+  extreme_cold_delta_c: -4.0     # Severe anomaly (Cold wave)
+
