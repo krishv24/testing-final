@@ -231,12 +231,88 @@ rules:
     confidence_weight: 0.75
     expected_lag_hours: 3.0
 
+<<<<<<< HEAD
   - rule_id: "WMO_DYN_002"
     name: "WMO Cyclonic Depression Gale Mandate (Force 8+)"
     tier: 3
     wmo_reference: "WMO-No. 558 & IMD/WMO RSMC Tropical Cyclone Operational Manual"
     severity: "advisory"
     description: "Tropical cyclone genesis & deep depression standard: an extreme 6-hour pressure fall (<= -6.0 hPa) signifies a deep cyclonic vortex, mandating gale-force wind gusts >= 17.2 m/s (Beaufort Force 8+)."
+=======
+  - rule_id: "RULE_002"
+    name: "Saturated Air Precipitation Likelihood"
+    description: "When relative humidity is extremely high (saturated air mass), precipitation is highly probable."
+    antecedent:
+      variable: "relative_humidity"
+      condition: "greater_than"
+      threshold: 90.0
+    consequent:
+      variable: "precipitation"
+      condition: "greater_than"
+      threshold: 0.0
+    confidence_weight: 0.85
+    expected_lag_hours: 0.0
+
+  - rule_id: "RULE_003"
+    name: "Thermal Low Development"
+    description: "Extremely high surface temperatures can lead to localized thermal low-pressure development as warm air rises."
+    antecedent:
+      variable: "temperature"
+      condition: "greater_than"
+      threshold: 35.0
+    consequent:
+      variable: "pressure_change_6h"
+      condition: "less_than"
+      threshold: -1.5
+    confidence_weight: 0.60
+    expected_lag_hours: 2.0
+
+  - rule_id: "RULE_004"
+    name: "Convective Instability Storm Risk"
+    description: "If the weather category indicates thunderstorm conditions with high moisture, expect heavy precipitation."
+    antecedent:
+      variable: "weather_category"
+      condition: "equals"
+      threshold: "thunderstorm"
+    consequent:
+      variable: "precipitation"
+      condition: "greater_than_or_equal"
+      threshold: 7.6
+    confidence_weight: 0.80
+    expected_lag_hours: 0.0
+
+  - rule_id: "RULE_005"
+    name: "Cold Frontal Passage"
+    description: "A sudden significant temperature drop is characteristically associated with a post-frontal pressure rise."
+    antecedent:
+      variable: "temperature_change_3h"
+      condition: "less_than"
+      threshold: -3.0
+    consequent:
+      variable: "pressure_change_3h"
+      condition: "greater_than"
+      threshold: 1.5
+    confidence_weight: 0.80
+    expected_lag_hours: 1.0
+
+  - rule_id: "RULE_006"
+    name: "Onshore Sea Breeze Initiation"
+    description: "Warm afternoon temperatures trigger a sea breeze circulation, shifting and increasing wind speed."
+    antecedent:
+      variable: "temperature"
+      condition: "greater_than"
+      threshold: 28.0
+    consequent:
+      variable: "wind_speed"
+      condition: "greater_than"
+      threshold: 4.0
+    confidence_weight: 0.70
+    expected_lag_hours: 1.0
+
+  - rule_id: "RULE_007"
+    name: "Cyclone Severe Wind Risk"
+    description: "An extreme drop in pressure over 6 hours indicates a deep low-pressure system, which strongly predicts severe winds."
+>>>>>>> 61f03e4dcb9d373a1ecf334414bc1335d2b2fc1b
     antecedent:
       variable: "pressure_change_6h"
       condition: "less_than_or_equal"

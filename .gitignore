@@ -32,6 +32,7 @@ app/.env
 # Environments
 .venv
 venv/
+venv_old/
 ENV/
 
 # IDEs
@@ -40,3 +41,10 @@ ENV/
 *.swp
 *.swo
 /myenv
+
+# Experiment outputs & local data dumps
+results/
+results.csv/
+experiment_log/
+*.csv
+

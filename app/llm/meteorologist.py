@@ -123,10 +123,21 @@ async def run_meteorologist(ctx: ContextPayload, *, use_cache: bool = True) -> t
     out = MeteorologistOutput.model_validate(final_data)
     out.confidence_report = final_report
 
+    # Serialize fact results for downstream recording
+    fact_results_dicts = []
+    for r in fact_results:
+        if hasattr(r, 'to_dict'):
+            fact_results_dicts.append(r.to_dict())
+        elif isinstance(r, dict):
+            fact_results_dicts.append(r)
+        else:
+            fact_results_dicts.append({"claim_id": getattr(r, 'claim_id', ''), "is_pass": getattr(r, 'is_pass', False)})
+
     # Record evaluation metrics (never crash the pipeline)
+    eval_metrics = {}
     try:
         tracker = EvaluationTracker()
-        tracker.record_run(
+        eval_metrics = tracker.record_run(
             fact_results=fact_results,
             rule_results=rule_results,
             causal_result=causal_results,
@@ -145,4 +156,15 @@ async def run_meteorologist(ctx: ContextPayload, *, use_cache: bool = True) -> t
             "context_hash": key,
         },
     )
-    return out, {"cached": False, "cache_key": key, "degradation": []}
+    return out, {
+        "cached": False,
+        "cache_key": key,
+        "degradation": [],
+        "eval_metrics": eval_metrics,
+        "validation_details": {
+            "fact_results": fact_results_dicts,
+            "rule_results": rule_results,
+            "causal_results": causal_results,
+            "temporal_results": temporal_results,
+        },
+    }

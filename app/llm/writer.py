@@ -54,9 +54,22 @@ async def run_writer(
             return fr, {"cached": True, "cache_key": key, "degradation": [DegradationCode.CACHE_HIT_REPORT.value]}
 
     prompt = writer_prompt(m_dict, params, ctx)
-    raw = await generate_json_text(prompt, temperature=0.5)
-    data = parse_json_object(raw)
-    wout = WriterLLMOutput.model_validate(data)
+    # Retry once on JSON parse failure (LLM sometimes returns truncated output)
+    wout = None
+    for writer_attempt in range(2):
+        raw = await generate_json_text(prompt, temperature=0.5)
+        try:
+            data = parse_json_object(raw)
+            wout = WriterLLMOutput.model_validate(data)
+            break
+        except Exception as e:
+            logger.warning("Writer JSON parse failed (attempt %d/2): %s", writer_attempt + 1, e)
+            if writer_attempt == 1:
+                raise
+            # Append a hint to the prompt for the retry
+            prompt = f"{prompt}\n\nIMPORTANT: Your previous response was malformed JSON. Respond with valid JSON only, no markdown fences or extra text."
+
+    assert wout is not None
 
     log_mode = (
         f"{ctx.context_mode.name}; hourly_included={ctx.context_mode.hierarchical_include_hourly}; "
