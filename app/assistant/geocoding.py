@@ -7,7 +7,7 @@ import httpx
 
 from app.assistant.retry import with_exponential_backoff
 from app.config import get_settings
-from app.schemas import LocationMeta
+from app.schemas import LocationMeta, parse_lat_lon_string
 
 logger = logging.getLogger(__name__)
 
@@ -134,6 +134,16 @@ async def resolve_location(
     lon: Optional[float],
     client: httpx.AsyncClient,
 ) -> LocationMeta:
+    if query:
+        query = query.strip() or None
+
+    # If coordinates are not provided, check if query string itself has coordinates
+    if (lat is None or lon is None) and query:
+        coords = parse_lat_lon_string(query)
+        if coords:
+            lat, lon = coords
+            query = None
+
     if lat is not None and lon is not None:
         el = await fetch_geonames_elevation(lat, lon, client)
         city = query or f"{lat:.4f},{lon:.4f}"
@@ -156,8 +166,12 @@ async def resolve_location(
             elevation_m=el,
         )
 
+    if lat is not None and lon is None:
+        raise ValueError("Both latitude and longitude are required (longitude is missing)")
+    if lon is not None and lat is None:
+        raise ValueError("Both latitude and longitude are required (latitude is missing)")
     if not query:
-        raise ValueError("Either query or lat/lon is required")
+        raise ValueError("Either location query or latitude/longitude is required")
 
     data = await fetch_geonames_search(query, client, max_rows=20)
     geonames = data.get("geonames") or []

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import re
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 # --- Location & climatology ---
@@ -198,6 +199,92 @@ class FinalReport(BaseModel):
     log_context_mode: str = ""
 
 
+def parse_lat_lon_string(text: str) -> Optional[tuple[float, float]]:
+    """Parse coordinate pairs from text like '19.076, 72.877' or '19.076° N, 72.877° E'."""
+    if not text or not isinstance(text, str):
+        return None
+    s = text.strip()
+    m = re.match(r"^([-+]?[0-9]*\.?[0-9]+)[,\s/]+([-+]?[0-9]*\.?[0-9]+)$", s)
+    if m:
+        try:
+            lat = float(m.group(1))
+            lon = float(m.group(2))
+            if -90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0:
+                return lat, lon
+        except ValueError:
+            pass
+    m = re.match(
+        r"^([0-9]*\.?[0-9]+)\s*°?\s*([NSns])[,\s/]+([0-9]*\.?[0-9]+)\s*°?\s*([EWew])$",
+        s,
+    )
+    if m:
+        try:
+            lat = float(m.group(1)) * (-1 if m.group(2).upper() == "S" else 1)
+            lon = float(m.group(3)) * (-1 if m.group(4).upper() == "W" else 1)
+            if -90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0:
+                return lat, lon
+        except ValueError:
+            pass
+    return None
+
+
+def normalize_location_data(data: Any) -> Any:
+    """Normalize input dict so lat/lon aliases, empty query strings, and coordinates are properly routed."""
+    if not isinstance(data, dict):
+        return data
+
+    lat_val = data.get("latitude")
+    if lat_val is None or lat_val == "":
+        for alias in ("lat", "Latitude", "Lat"):
+            if alias in data and data[alias] not in (None, ""):
+                lat_val = data[alias]
+                break
+
+    lon_val = data.get("longitude")
+    if lon_val is None or lon_val == "":
+        for alias in ("lon", "long", "lng", "Longitude", "Lon", "Long", "Lng"):
+            if alias in data and data[alias] not in (None, ""):
+                lon_val = data[alias]
+                break
+
+    if isinstance(lat_val, str) and (lon_val is None or lon_val == ""):
+        parsed = parse_lat_lon_string(lat_val)
+        if parsed:
+            lat_val, lon_val = parsed
+
+    q = data.get("query")
+    if isinstance(q, str):
+        q = q.strip()
+        if not q:
+            q = None
+        elif (lat_val is None or lat_val == "") and (lon_val is None or lon_val == ""):
+            parsed = parse_lat_lon_string(q)
+            if parsed:
+                lat_val, lon_val = parsed
+                q = None
+
+    if isinstance(lat_val, str) and lat_val.strip():
+        try:
+            lat_val = float(lat_val.strip())
+        except ValueError:
+            pass
+    elif lat_val == "":
+        lat_val = None
+
+    if isinstance(lon_val, str) and lon_val.strip():
+        try:
+            lon_val = float(lon_val.strip())
+        except ValueError:
+            pass
+    elif lon_val == "":
+        lon_val = None
+
+    data["latitude"] = lat_val
+    data["longitude"] = lon_val
+    data["query"] = q
+    return data
+
+
 # --- API bodies ---
 
 
@@ -207,6 +294,11 @@ class AssistantRequest(BaseModel):
     longitude: Optional[float] = None
     context_style: Literal["hierarchical", "baseline"] = "hierarchical"
     use_cache: bool = True
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_inputs(cls, data: Any) -> Any:
+        return normalize_location_data(data)
 
 
 class AnalysisRequest(BaseModel):
@@ -233,3 +325,8 @@ class FullPipelineRequest(BaseModel):
     length: Length = "medium"
     domain: Domain = "general_public"
     use_cache: bool = True
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_inputs(cls, data: Any) -> Any:
+        return normalize_location_data(data)

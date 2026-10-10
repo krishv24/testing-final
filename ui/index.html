@@ -746,10 +746,10 @@
           <input type="text" id="query" placeholder="e.g. Venice, Italy" autocomplete="off" />
         </label>
         <label>Latitude (opt)
-          <input type="number" id="lat" step="any" placeholder="45.44" />
+          <input type="text" id="lat" inputmode="decimal" placeholder="45.44" />
         </label>
         <label>Longitude (opt)
-          <input type="number" id="lon" step="any" placeholder="12.31" />
+          <input type="text" id="lon" inputmode="decimal" placeholder="12.31" />
         </label>
         <label>Context
           <select id="context_style">
@@ -1025,10 +1025,47 @@
       $("#main").style.display = "none";
       $("#run").disabled = true;
 
+      const rawLat = ($("#lat").value || "").trim();
+      const rawLon = ($("#lon").value || "").trim();
+      let rawQuery = ($("#query").value || "").trim();
+
+      let lat = rawLat ? parseFloat(rawLat) : null;
+      let lon = rawLon ? parseFloat(rawLon) : null;
+
+      if (rawLat && !rawLon && (rawLat.includes(",") || rawLat.includes(" "))) {
+        const parts = rawLat.split(/[, /]+/).filter(Boolean);
+        if (parts.length >= 2) {
+          const pLat = parseFloat(parts[0]);
+          const pLon = parseFloat(parts[1]);
+          if (!isNaN(pLat) && !isNaN(pLon)) {
+            lat = pLat;
+            lon = pLon;
+          }
+        }
+      }
+
+      if (rawQuery && (lat == null || isNaN(lat)) && (lon == null || isNaN(lon))) {
+        const parts = rawQuery.split(/[, /]+/).filter(Boolean);
+        if (parts.length === 2) {
+          const pLat = parseFloat(parts[0]);
+          const pLon = parseFloat(parts[1]);
+          if (!isNaN(pLat) && !isNaN(pLon) && Math.abs(pLat) <= 90 && Math.abs(pLon) <= 180) {
+            lat = pLat;
+            lon = pLon;
+            rawQuery = "";
+          }
+        }
+      }
+
+      const parsedLat = (lat != null && !isNaN(lat)) ? lat : null;
+      const parsedLon = (lon != null && !isNaN(lon)) ? lon : null;
+
       const body = {
-        query: $("#query").value.trim() || null,
-        latitude: $("#lat").value ? parseFloat($("#lat").value) : null,
-        longitude: $("#lon").value ? parseFloat($("#lon").value) : null,
+        query: rawQuery || null,
+        latitude: parsedLat,
+        longitude: parsedLon,
+        lat: parsedLat,
+        lon: parsedLon,
         context_style: $("#context_style").value,
         tone: $("#tone").value,
         length: $("#length").value,
